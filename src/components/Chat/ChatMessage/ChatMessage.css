@@ -1,0 +1,10 @@
+.ChatMessage {
+  border: solid 1px grey;
+  margin: 16px;
+  background-color: white;
+}
+
+.SpeechAct {
+  background-color: lightblue;
+  font-size: 1.1rem;
+}

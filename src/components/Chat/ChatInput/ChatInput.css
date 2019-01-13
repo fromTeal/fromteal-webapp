@@ -1,0 +1,23 @@
+.ChatInput {
+  width: 100%;
+  background: linear-gradient(#eee, lightblue);
+  border-radius: 0 0 30px 30px;
+  box-shadow: inset -15px 0 lightblue;
+  margin: 2% auto;
+}
+
+.InputForm {
+  margin: 50px;
+}
+
+.ChatInput input {
+    vertical-align: top;
+    background-color: #008080;
+    color: white;
+    font: inherit;
+
+    margin: 0 5px;
+    width: 64px;
+    height: 46px;
+
+}
