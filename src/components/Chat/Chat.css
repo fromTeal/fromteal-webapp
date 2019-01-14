@@ -10,23 +10,23 @@
 }
 
 
-@@media (min-width: 1000px) and (min-height: 700px) {
+@media (min-width: 1000px) and (min-height: 700px) {
   .Chat {
     width: 700px;
     height: 600px;
   }
 }
 
-@@media (min-width: 500px) and (min-height: 401px) {
+@media (min-width: 500px) and (min-height: 401px) {
   .Chat {
     width: 450px;
     height: 400px;
   }
 }
 
-@@media (min-width: 500px) and (min-height: 400px) {
+@media (min-width: 500px) and (min-height: 400px) {
   .Chat {
-    width: 350px;
+    width: 900px;
     height: 300px;
   }
 }

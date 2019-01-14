@@ -19,5 +19,22 @@
     margin: 0 5px;
     width: 64px;
     height: 46px;
+}
 
+@media (min-width: 1000px) and (min-height: 700px) {
+  .ChatInput {
+    width: 700px;
+  }
+}
+
+@media (min-width: 500px) and (min-height: 401px) {
+  .ChatInput {
+    width: 450px;
+  }
+}
+
+@media (min-width: 500px) and (min-height: 400px) {
+  .ChatInput {
+    width: 900px;
+  }
 }

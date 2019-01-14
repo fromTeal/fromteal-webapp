@@ -1,5 +1,7 @@
 import React, {Component} from 'react'
 
+import Button from '../UI/Button/Button'
+
 
 class TeamForm extends Component {
   constructor(props) {
@@ -8,7 +10,7 @@ class TeamForm extends Component {
     this.form = React.createRef()
   }
 
-  submit() {
+  submit = () => {
     this.props.clickHandler(this.form.current[0].value)
     this.form.current.reset()
   }
@@ -23,7 +25,10 @@ class TeamForm extends Component {
             name="name"
             placeholder="Team name"
           />
-          <input type="button" value="Create" onClick={this.submit}/>
+          <br/>
+          <Button btnType="Success" clicked={this.submit}>Create</Button>
+          <Button btnType="Danger" clicked={this.props.cancelCreateTeam}>Cancel</Button>
+
         </form>
       </div>
     )
