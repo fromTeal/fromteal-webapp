@@ -12,8 +12,6 @@ class ChatInput extends Component {
     const text = this.messageText.current.value
     this.props.addMessage(speechAct, text)
     this.messageText.current.value = ""
-    // TODO fix & make nicer
-    document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight
   }
 
   render() {
