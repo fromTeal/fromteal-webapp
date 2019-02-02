@@ -22,7 +22,7 @@ class ChatInput extends Component {
           {this.props.speechActs.map((speechAct, i) => (<option key={speechAct} value={speechAct}>{speechAct}</option>))}
           </select>
           <br/>
-          <textarea ref={this.messageText} placeholder="Your message" cols="80" rows="3"></textarea>
+          <textarea ref={this.messageText} placeholder="Your message" rows="3"></textarea>
           <input type="button" className="SendButton" onClick={this.sendHandler} value="Send"/>
         </div>
       </div>

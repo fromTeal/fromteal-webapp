@@ -6,27 +6,25 @@
   text-align: left;
   background-color: #eee;
   box-shadow: inset -15px 0 lightblue;
-
-}
-
-
-@media (min-width: 1000px) and (min-height: 700px) {
-  .Chat {
-    width: 700px;
-    height: 600px;
-  }
-}
-
-@media (min-width: 500px) and (min-height: 401px) {
-  .Chat {
-    width: 450px;
-    height: 400px;
-  }
 }
 
 @media (min-width: 500px) and (min-height: 400px) {
-  .Chat {
-    width: 900px;
-    height: 300px;
-  }
+    .Chat {
+        width: 450px;
+        height: 300px;
+    }
+}
+
+@media (min-width: 650px) and (min-height: 401px) {
+    .Chat {
+        width: 650px;
+        height: 400px;
+    }
+}
+
+@media (min-width: 1000px) and (min-height: 700px) {
+    .Chat {
+        width: 700px;
+        height: 600px;
+    }
 }
