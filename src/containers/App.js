@@ -1,16 +1,20 @@
 import React, { Component } from 'react'
-
-import Layout from '../components/Layout/Layout'
+import { BrowserRouter, Route } from 'react-router-dom'
+import Layout from '../hoc/Layout/Layout'
 import TeamChannel from './TeamChannel/TeamChannel'
+import Teams from './Teams/Teams'
 
 class App extends Component {
   render() {
     return (
-      <div>
-        <Layout>
-          <TeamChannel/>
-        </Layout>
-      </div>
+      <BrowserRouter>
+        <div>
+          <Layout>
+            <Route path="/" exact component={TeamChannel} />
+            <Route path="/teams" exact component={Teams} />
+          </Layout>
+        </div>
+      </BrowserRouter>
     )
   }
 

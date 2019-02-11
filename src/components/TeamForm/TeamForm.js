@@ -2,7 +2,6 @@ import React, {Component} from 'react'
 
 import Button from '../UI/Button/Button'
 
-
 class TeamForm extends Component {
   constructor(props) {
     super(props)

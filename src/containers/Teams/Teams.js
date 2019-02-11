@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import './Teams.css';
-import TeamList from '../components/TeamList/TeamList'
-import TeamForm from '../components/TeamForm/TeamForm'
-import Login from '../components/Login/Login'
-import AuthContext from './auth-context'
+import TeamList from '../../components/TeamList/TeamList'
+import TeamForm from '../../components/TeamForm/TeamForm'
+import Modal from '../../components/UI/Modal/Modal'
+import Button from '../../components/UI/Button/Button'
+import Login from '../../components/Login/Login'
+import AuthContext from '../auth-context'
 
 
 class Teams extends Component {
@@ -13,7 +15,8 @@ class Teams extends Component {
       { name: "Manual Pilot" },
       { name: "W2M" },
       { name: "fromTeal" }
-    ]
+    ],
+    creatingNewTeam: false,
   }
 
   toggleAuth = () => {
@@ -23,6 +26,14 @@ class Teams extends Component {
         isAuth: !prevState.isAuth
       }
     })
+  }
+
+  cancelCreateTeam = () => {
+    this.setState({creatingNewTeam: false})
+  }
+
+  showTeamForm = () => {
+    this.setState({creatingNewTeam: true})
   }
 
   createTeamHandler = (name) => {
@@ -46,7 +57,10 @@ class Teams extends Component {
           <TeamList
             teams={this.state.teams}
             clicked={this.openTeamHandler}/>
-          <TeamForm clickHandler={this.createTeamHandler}/>
+            <Button btnType="Success" clicked={this.showTeamForm}>Create new team</Button>
+            <Modal show={this.state.creatingNewTeam} modalClosed={this.cancelCreateTeam}>
+              <TeamForm clickHandler={this.createTeamHandler} cancelCreateTeam={this.cancelCreateTeam}/>
+            </Modal>
         </AuthContext.Provider>
       </div>
     );

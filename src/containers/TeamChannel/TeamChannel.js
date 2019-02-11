@@ -2,10 +2,8 @@ import React, { Component } from 'react'
 import firebase from '../../firebase/firebase-config'
 import Chat from '../../components/Chat/Chat'
 import ChatInput from '../../components/Chat/ChatInput/ChatInput'
-import TeamForm from '../../components/TeamForm/TeamForm'
-import Modal from '../../components/UI/Modal/Modal'
-import Button from '../../components/UI/Button/Button'
-
+import Spinner from '../../components/UI/Spinner/Spinner'
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler'
 
 class TeamChannel extends Component {
   state = {
@@ -17,7 +15,7 @@ class TeamChannel extends Component {
       "ask-for-advice-on-tool",
       "approve-tool",
     ],
-    creatingNewTeam: false
+    loading: true
   }
 
 
@@ -29,6 +27,7 @@ class TeamChannel extends Component {
     });
     db.collection("communicate/fromTeal/messages").orderBy("created")
         .onSnapshot((querySnapshot) => {
+          this.setState({loading: false})
           querySnapshot.docChanges().forEach((change) => {
             // TODO handle other changes - update & delete!
             if (change.type === "added") {
@@ -62,23 +61,14 @@ class TeamChannel extends Component {
     });
   }
 
-  cancelCreateTeam = () => {
-    this.setState({creatingNewTeam: false})
-  }
-
-  showTeamForm = () => {
-    this.setState({creatingNewTeam: true})
-  }
-
   render() {
+    let chat = <Chat messages={this.state.messages}/>
+    if (this.state.loading) chat = <Spinner />
+
     return (
       <React.Fragment>
-        <Modal show={this.state.creatingNewTeam} modalClosed={this.cancelCreateTeam}>
-          <TeamForm clickHandler={this.createTeam} cancelCreateTeam={this.cancelCreateTeam}/>
-        </Modal>
-        <Chat messages={this.state.messages}/>
+        {chat}
         <ChatInput speechActs={this.state.speechActs} addMessage={this.addMessage}/>
-        <Button btnType="Success" clicked={this.showTeamForm}>Create new team</Button>
       </React.Fragment>
     )
 
@@ -87,4 +77,4 @@ class TeamChannel extends Component {
 }
 
 
-export default TeamChannel
+export default withErrorHandler(TeamChannel)
