@@ -5,9 +5,9 @@ import NavigationItem from '../NavigationItem/NavigationItem'
 
 const navigationItems = () => (
   <ul className={'NavigationItems'}>
-    <NavigationItem link="/" active>Make</NavigationItem>
-    <NavigationItem link="/teams">Team-up</NavigationItem>
-    <NavigationItem link="/auth">Login</NavigationItem>  
+    <NavigationItem link="/teams">My teams</NavigationItem>
+    <NavigationItem link="/new-team">Create team</NavigationItem>
+    <NavigationItem link="/auth">Login</NavigationItem>
   </ul>
 )
 

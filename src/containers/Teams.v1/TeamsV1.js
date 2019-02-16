@@ -51,16 +51,15 @@ class Teams extends Component {
     return (
       <div className="Teams">
         <AuthContext.Provider
-          value={{ isAuth: this.state.isAuth, toggleAuth: this.toggleAuth }}
-        >
+          value={{ isAuth: this.state.isAuth, toggleAuth: this.toggleAuth }}>
           <Login/>
           <TeamList
             teams={this.state.teams}
             clicked={this.openTeamHandler}/>
-            <Button btnType="Success" clicked={this.showTeamForm}>Create new team</Button>
-            <Modal show={this.state.creatingNewTeam} modalClosed={this.cancelCreateTeam}>
-              <TeamForm clickHandler={this.createTeamHandler} cancelCreateTeam={this.cancelCreateTeam}/>
-            </Modal>
+          <Button btnType="Success" clicked={this.showTeamForm}>Create new team</Button>
+          <Modal show={this.state.creatingNewTeam} modalClosed={this.cancelCreateTeam}>
+            <TeamForm clickHandler={this.createTeamHandler} cancelCreateTeam={this.cancelCreateTeam}/>
+          </Modal>
         </AuthContext.Provider>
       </div>
     );

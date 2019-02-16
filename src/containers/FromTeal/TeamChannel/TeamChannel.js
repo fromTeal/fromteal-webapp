@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import firebase from '../../firebase/firebase-config'
-import Chat from '../../components/Chat/Chat'
-import ChatInput from '../../components/Chat/ChatInput/ChatInput'
-import Spinner from '../../components/UI/Spinner/Spinner'
-import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler'
+import firebase from '../../../firebase/firebase-config'
+import Chat from '../Chat/Chat'
+import ChatInput from '../Chat/ChatInput/ChatInput'
+import Spinner from '../../../components/UI/Spinner/Spinner'
+import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 
 class TeamChannel extends Component {
   state = {

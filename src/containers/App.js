@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import { BrowserRouter, Route } from 'react-router-dom'
 import Layout from '../hoc/Layout/Layout'
-import TeamChannel from './TeamChannel/TeamChannel'
-import Teams from './Teams/Teams'
 import FirebaseAuth from './Auth/FirebaseAuth'
+
+import FromTeal from './FromTeal/FromTeal'
 
 class App extends Component {
   render() {
@@ -11,9 +11,7 @@ class App extends Component {
       <BrowserRouter>
         <div>
           <Layout>
-            <Route path="/" exact component={TeamChannel} />
-            <Route path="/teams" exact component={Teams} />
-            <Route path="/auth" exact component={FirebaseAuth} />
+            <FromTeal />
           </Layout>
         </div>
       </BrowserRouter>
