@@ -3,7 +3,6 @@ import { Route } from 'react-router-dom';
 
 import Team from '../Team/Team';
 import './Teams.css';
-import FullPost from '../FullPost/FullPost';
 
 class Teams extends Component {
     state = {
