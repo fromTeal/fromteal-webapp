@@ -40,14 +40,11 @@ class NewTeam extends Component {
                 {redirect}
                 <h1>Create new team</h1>
                 <label>Initial name</label>
-                <input type="text" value={this.state.title} onChange={( event ) => this.setState( { title: event.target.value } )} />
+                <input type="text" value={this.state.name} onChange={( event ) => this.setState( { name: event.target.value } )} />
                 <label>Initial purpose</label>
-                <textarea rows="4" value={this.state.content} onChange={( event ) => this.setState( { content: event.target.value } )} />
+                <textarea rows="4" value={this.state.purpose} onChange={( event ) => this.setState( { purpose: event.target.value } )} />
                 <label>Tags</label>
-                <select value={this.state.author} onChange={( event ) => this.setState( { author: event.target.value } )}>
-                    <option value="Max">Max</option>
-                    <option value="Manu">Manu</option>
-                </select>
+                <input type="text" value={this.state.tags} onChange={( event ) => this.setState( { tags: event.target.value } )} />
                 <button onClick={this.postDataHandler}>Create team</button>
             </div>
         );

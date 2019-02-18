@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 import { BrowserRouter, Route } from 'react-router-dom'
-import Layout from '../hoc/Layout/Layout'
-import FirebaseAuth from './Auth/FirebaseAuth'
 
 import FromTeal from './FromTeal/FromTeal'
 
@@ -10,9 +8,7 @@ class App extends Component {
     return (
       <BrowserRouter>
         <div>
-          <Layout>
-            <FromTeal />
-          </Layout>
+          <FromTeal />
         </div>
       </BrowserRouter>
     )
