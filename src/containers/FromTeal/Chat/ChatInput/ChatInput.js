@@ -10,7 +10,8 @@ class ChatInput extends Component {
   sendHandler = () => {
     const speechAct = this.speectActSelect.current.value
     const text = this.messageText.current.value
-    this.props.addMessage(speechAct, text)
+    const teamId = this.props.teamId
+    this.props.addMessage(speechAct, text, teamId)
     this.messageText.current.value = ""
   }
 

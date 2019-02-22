@@ -20,12 +20,13 @@ class TeamChannel extends Component {
 
 
   componentDidMount() {
+    const teamId = this.props.match.params.id
     const db = firebase.firestore();
     // Disable deprecated features
     db.settings({
       timestampsInSnapshots: true
     });
-    db.collection("communicate/fromTeal/messages").orderBy("created")
+    db.collection(`communicate/${teamId}/messages`).orderBy("created")
         .onSnapshot((querySnapshot) => {
           this.setState({loading: false})
           querySnapshot.docChanges().forEach((change) => {
@@ -44,9 +45,9 @@ class TeamChannel extends Component {
         });
   }
 
-  addMessage = (speechAct, text) => {
-    const db = firebase.firestore();
-    db.collection("communicate/fromTeal/messages").add({
+  addMessage = (speechAct, text, teamId) => {
+    const db = firebase.firestore()
+    db.collection(`communicate/${teamId}/messages`).add({
         type: "text-message",
         speechAct: speechAct,
         text: text,
@@ -68,7 +69,7 @@ class TeamChannel extends Component {
     return (
       <React.Fragment>
         {chat}
-        <ChatInput speechActs={this.state.speechActs} addMessage={this.addMessage}/>
+        <ChatInput teamId={this.props.match.params.id} speechActs={this.state.speechActs} addMessage={this.addMessage}/>
       </React.Fragment>
     )
 

@@ -30,20 +30,20 @@ class Teams extends Component {
         this.setState({
           teams: [
             {
-              id: "u65rvu65ur6fyt",
+              id: "fromTeal",
               name: "fromTeal",
               purpose: "enable people to work on what they love, love their work, & make a living out of it.",
               tags: "organizing"
             },
             {
-                id: "x54cjyv5r5jyvru5rybjt",
+                id: "manual-pilot",
                 name: "Manual Pilot",
                 purpose: "help you spend more time on the things that are important to you.",
                 tags: "life"
             },
             {
-              id: "hjz4875tkvjy545yrf",
-              name: "Matrix Browser",
+              id: "w2m",
+              name: "W2M",
               purpose: "empower people to handle more information",
               tags: "visualization"
             }
