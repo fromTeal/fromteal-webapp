@@ -10,6 +10,9 @@ import asyncComponent from '../../hoc/asyncComponent';
 import AuthContext from '../auth-context'
 import Layout from '../../hoc/Layout/Layout'
 
+import dibauAvatar from '../../assets/images/dibau.jpg'
+
+
 const AsyncNewTeam = asyncComponent(() => {
     return import('./NewTeam/NewTeam');
 });
@@ -48,9 +51,30 @@ class FromTeal extends Component {
     render () {
       let content = (
         <div>
-          <h1>Welcome to fromTeal!</h1>
-          <p>Please sign-in:</p>
-          <FirebaseAuth />
+          <div class="container">
+            <img src={dibauAvatar} alt="Avatar"></img>
+            <p>Hi, my name is Udi & I'm a software developer from Boston.
+            Every now & then, my mind comes up with ideas for new
+            projects. I really want to build these projects, but
+            it usually takes more than one person to build something
+            that's really good. So, I decided to build an app called fromTeal, in order
+            to enable people like me to:
+          </p>
+          <ul>
+            <li><strong>Work on what they love</strong> & realize their projects</li>
+            <li><strong>Love their work</strong> through collaboration with a team of like minded people</li>
+            <li><strong>Make a living out of it</strong> by making the projects profitable so they can work on them full-time</li>
+          </ul>
+
+            <span class="time-right">11:00</span>
+          </div>
+
+          <div class="container">
+            <img src={dibauAvatar} alt="Avatar"></img>
+            <p>Sign-in to get started:</p>
+            <FirebaseAuth />
+            <span class="time-right">11:00</span>
+          </div>
         </div>
       )
       if (this.state.isAuth) {
