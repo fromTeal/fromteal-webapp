@@ -53,27 +53,53 @@ class FromTeal extends Component {
         <div>
           <div class="container">
             <img src={dibauAvatar} alt="Avatar"></img>
-            <p>Hi, my name is Udi & I'm a software developer from Boston.
-            Every now & then, my mind comes up with ideas for new
-            projects. I really want to build these projects, but
-            it usually takes more than one person to build something
-            that's really good. So, I decided to build an app called fromTeal, in order
-            to enable people like me to:
-          </p>
-          <ul>
-            <li><strong>Work on what they love</strong> & realize their projects</li>
-            <li><strong>Love their work</strong> through collaboration with a team of like minded people</li>
-            <li><strong>Make a living out of it</strong> by making the projects profitable so they can work on them full-time</li>
-          </ul>
-
-            <span class="time-right">11:00</span>
+            <p>
+              Hi, my name is Udi & I'm a software developer from Boston.
+              Every now & then, my mind comes up with ideas for new
+              projects. I really want to build these projects, but
+              it usually takes more than one person to build something
+              that's really great. So, I decided to build an app to help people like me to
+              <strong> team-up with like-minded people</strong> in order to
+              <strong> realize their dream projects</strong>.
+            </p>
           </div>
 
           <div class="container">
             <img src={dibauAvatar} alt="Avatar"></img>
-            <p>Sign-in to get started:</p>
+            <p>
+              There are many apps to facilitate teams work, but this app is intended for
+              <strong> self-managed teams</strong>, that are driven by shared <strong>purpose</strong>,
+              & strive to fully express their members <strong>wholeness</strong>.
+              Such teams are known as <strong>"Teal Organizations"</strong>, a term introduced
+              in a book called <a href="http://www.reinventingorganizations.com/">"Reinventing Organizations"</a>,
+              which I really recommend you to read, so you'll understand why I think
+              self-managed teams are the future.
+            </p>
+          </div>
+
+
+          <div class="container">
+            <img src={dibauAvatar} alt="Avatar"></img>
+              <p>As the team has no managers, we need a way
+                to decide on how to manage equity, & split the
+                project's profits once it has some. For that purpose,
+                the app manages a digital currency for each team,
+                & keeps tap of member's contributions. Future versions of the app
+                will extend the digital currency into a smart contract for establishing a
+                <strong> continuous organization</strong> (or DAO), in order to enable teams
+                to raise funds & manage their cash flow, in a fair & owner-less way.
+            </p>
+          </div>
+
+      <div class="container">
+        <img src={dibauAvatar} alt="Avatar"></img>
+          <p>
+            If you're like me, & wish to work on what you love, love your work,
+            & make a living out of it, you're invited to try the app.
+          <br/>
+      </p>
+
             <FirebaseAuth />
-            <span class="time-right">11:00</span>
           </div>
         </div>
       )
