@@ -9,11 +9,34 @@ class TeamChannel extends Component {
   state = {
     messages: [],
     speechActs: [
-      "notification",
-      "ask-to-join",
-      "suggest-tool",
-      "ask-for-advice-on-tool",
-      "approve-tool",
+      "apply",
+      "approve",
+      "decline",
+      "deactivate",
+      "defer",
+      "discuss",
+      "invite",
+      "notify",
+      "remove",
+      "release",
+      "replace",
+      "start",
+      "suggest",
+      "validate"
+    ],
+    entityTypes: [
+      "member",
+      "purpose",
+      "logo",
+      "team-name",
+      "product-concept",
+      "ux-spec",
+      "tech-spec",
+      "use-case",
+      "tool",
+      "user",
+      "metric",
+      "progress"
     ],
     loading: true
   }
@@ -45,11 +68,13 @@ class TeamChannel extends Component {
         });
   }
 
-  addMessage = (speechAct, text, teamId) => {
+  addMessage = (speechAct, entityType, entityId, text, teamId) => {
     const db = firebase.firestore()
     db.collection(`communicate/${teamId}/messages`).add({
         type: "text-message",
         speechAct: speechAct,
+        entityType: entityType,
+        entityId: entityId,
         text: text,
         user: "dibaunaumh@gmail.com",
         created: new Date()
@@ -69,7 +94,11 @@ class TeamChannel extends Component {
     return (
       <React.Fragment>
         {chat}
-        <ChatInput teamId={this.props.match.params.id} speechActs={this.state.speechActs} addMessage={this.addMessage}/>
+        <ChatInput
+          teamId={this.props.match.params.id}
+          speechActs={this.state.speechActs}
+          entityTypes={this.state.entityTypes}
+          addMessage={this.addMessage}/>
       </React.Fragment>
     )
 

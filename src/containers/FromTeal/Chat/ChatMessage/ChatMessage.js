@@ -25,7 +25,7 @@ class ChatMessage extends Component {
 
     return (
         <div className={'ChatMessage'}>
-          <div className={'SpeechAct'}>{this.props.speechAct}</div>
+          <div className={'SpeechAct'}>{this.props.speechAct} {this.props.entityType} {this.props.entityId}</div>
           {message}
         </div>
     )
