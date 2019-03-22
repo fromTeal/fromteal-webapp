@@ -1,17 +1,25 @@
 .ChatInput {
   width: 100%;
-  background: linear-gradient(#eee, lightblue);
-  border-radius: 0 0 30px 30px;
-  box-shadow: inset -15px 0 lightblue;
+  /* background: linear-gradient(#eee, lightblue); */
+  border: solid #eee 0.5px;
+  /* box-shadow: inset -15px 0 lightblue; */
   margin: 2% auto;
 }
 
 .InputForm {
-  margin: 50px;
+  margin: 5px;
+}
+
+.ChatInput select {
+    vertical-align: top;
+    background-color: lightblue;
+    font-size: 1.1rem;
 }
 
 .ChatInput input {
     vertical-align: top;
+    background-color: lightblue;
+    font-size: 1.1rem;
 /*    background-color: #008080;
     color: white;
     font: inherit;
@@ -20,10 +28,17 @@
     width: 64px;
     height: 46px;
     */
-} 
+}
 
 .ChatInput textarea {
-  width: 70%;
+  width: 80%;
+}
+
+.ChatInput button {
+    vertical-align: top;
+    margin: 0 5px;
+    width: 64px;
+    height: 46px;
 }
 
 @media (min-width: 500px) and (min-height: 400px) {

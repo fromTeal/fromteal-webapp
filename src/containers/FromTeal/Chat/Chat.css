@@ -4,8 +4,8 @@
   height: 450px;
   overflow: scroll;
   text-align: left;
-  background-color: #eee;
-  box-shadow: inset -15px 0 lightblue;
+  /* background-color: #eee; */
+  /* box-shadow: inset -15px 0 lightblue; */
 }
 
 @media (min-width: 500px) and (min-height: 400px) {
@@ -18,7 +18,7 @@
 @media (min-width: 650px) and (min-height: 401px) {
     .Chat {
         width: 650px;
-        height: 400px;
+        height: 450px;
     }
 }
 

@@ -33,7 +33,7 @@ class ChatInput extends Component {
           <input type="text" placeholder="Entity-id" ref={this.entityIdInput}></input>
           <br/>
           <textarea ref={this.messageText} placeholder="Your message" rows="3"></textarea>
-          <input type="button" className="SendButton" onClick={this.sendHandler} value="Send"/>
+          <button className="SendButton" onClick={this.sendHandler}>Send</button>
         </div>
       </div>
     )

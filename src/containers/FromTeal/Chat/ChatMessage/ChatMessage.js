@@ -3,6 +3,9 @@ import PropTypes from 'prop-types'
 
 import classes from './ChatMessage.css'
 
+import dibauAvatar from '../../../../assets/images/dibau.jpg'
+
+
 
 class ChatMessage extends Component {
 
@@ -24,9 +27,11 @@ class ChatMessage extends Component {
     }
 
     return (
-        <div className={'ChatMessage'}>
-          <div className={'SpeechAct'}>{this.props.speechAct} {this.props.entityType} {this.props.entityId}</div>
+        <div className={'container'}>
+          <img src={dibauAvatar} alt="Avatar"></img>
+          <span className={'SpeechAct'}>{this.props.speechAct} {this.props.entityType} {this.props.entityId}</span>
           {message}
+          <span class="time-right">{this.props.created.toDate().toLocaleString()}</span>
         </div>
     )
   }
