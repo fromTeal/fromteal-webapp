@@ -11,9 +11,7 @@ class FirebaseLogout extends Component {
 
 
   componentDidMount = () => {
-    const self = this
     firebase.auth().signOut().then(function() {
-      self.context.setAuthState(false, null)
       console.log('Signed Out');
     }, function(error) {
       console.error('Sign Out Error', error);
@@ -25,7 +23,7 @@ class FirebaseLogout extends Component {
         <p>
           You have successfully logged out.
           <br/>
-          <a href="/">Back to homepage</a>
+          See you next time!
         </p>
     )
   }

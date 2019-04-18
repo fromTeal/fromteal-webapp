@@ -38,11 +38,12 @@ class FromTeal extends Component {
     }
 
     setAuthState = (isAuth, user) => {
+        console.log(`setAuthState: ${isAuth}`)
         this.setState(prevState => {
             return {
                 ...prevState,
                 isAuth: isAuth,
-                currentUser: user
+                user: user
             }
         })
     }
@@ -88,7 +89,7 @@ class FromTeal extends Component {
 
       return (
         <AuthContext.Provider
-              value={{ isAuth: this.state.isAuth, setAuthState: this.setAuthState, user: this.state.currentUser}}>
+              value={{ isAuth: this.state.isAuth, user: this.state.user, setAuthState: this.setAuthState }}>
           <Layout>
             <div className="FromTeal">
               {content}

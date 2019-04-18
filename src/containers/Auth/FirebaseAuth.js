@@ -30,7 +30,7 @@ class FirebaseAuth extends Component {
   componentDidMount() {
     this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
         (user) => {
-          console.log("AuthStateChanged")
+          console.log(`AuthStateChanged - user = ${user}`)
           if (user) {
             console.log(user)
             const userModel = {
@@ -38,9 +38,10 @@ class FirebaseAuth extends Component {
               email: user.email,
               picture: user.photoURL
             }
-            localStorage.setItem('user', userModel)
-          }
-          else {
+            this.storeUserDetails(userModel)
+            this.context.setAuthState(true, userModel)
+          } else {
+            this.clearUserDetails()
             this.context.setAuthState(false, null)
           }
         }
