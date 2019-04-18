@@ -10,9 +10,8 @@ class NavigationItems extends Component {
   render() {
     return (
       <ul className={'NavigationItems'}>
-        <NavigationItem link="/teams">My teams</NavigationItem>
-        <NavigationItem link="/new-team">Create team</NavigationItem>
-        { this.context.isAuth ? <img src={this.context.user.picture}/> : <NavigationItem link="/auth">Login</NavigationItem> }
+        { this.context.isAuth ? <NavigationItem link="/teams">My teams</NavigationItem> : null }
+        { this.context.isAuth ? <NavigationItem link="/logout">Logout</NavigationItem> : null }
       </ul>
     )
   }

@@ -40,7 +40,9 @@ class FirebaseAuth extends Component {
             }
             localStorage.setItem('user', userModel)
           }
-          this.context.toggleAuth(!!user, user)
+          else {
+            this.context.setAuthState(false, null)
+          }
         }
     );
   }

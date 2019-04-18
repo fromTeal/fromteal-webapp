@@ -6,6 +6,7 @@ import './FromTeal.css';
 import Teams from './Teams/Teams';
 import TeamChannel from './TeamChannel/TeamChannel';
 import FirebaseAuth from '../Auth/FirebaseAuth'
+import FirebaseLogout from '../Auth/FirebaseLogout'
 import asyncComponent from '../../hoc/asyncComponent';
 import AuthContext from '../auth-context'
 import Layout from '../../hoc/Layout/Layout'
@@ -32,20 +33,18 @@ class FromTeal extends Component {
       const user = localStorage.getItem('user')
       if (user) {
         console.log(user)
-        this.toggleAuth(true, user)
-        this.setState({user: user})
+        this.setAuthState(true, user)
       }
     }
 
-    toggleAuth = (isSignedIn, user) => {
-      console.log("toggleAuth")
-      this.setState(prevState => {
-        return {
-          ...prevState,
-          isAuth: isSignedIn,
-          user: user
-        }
-      })
+    setAuthState = (isAuth, user) => {
+        this.setState(prevState => {
+            return {
+                ...prevState,
+                isAuth: isAuth,
+                currentUser: user
+            }
+        })
     }
 
     render () {
@@ -53,8 +52,8 @@ class FromTeal extends Component {
 
       let content = (
         <div>
-          <div class="container">
-            <img src={dibauAvatar} alt="Avatar"></img>
+          <div className="container">
+            <img src={dibauAvatar} alt="Avatar"/>
             <p>
               Hi, my name is Udi.
               Every now & then, my mind comes up with ideas for new
@@ -65,7 +64,7 @@ class FromTeal extends Component {
               <strong> realize their dream projects</strong>. See how it works:
             </p>
 
-            <iframe style={iframeStyle} width="500" height="350" src="//speakerdeck.com/player/7b754d59b56446598afccdf8c56de28c"/>
+            {/*<iframe style={iframeStyle} width="500" height="350" src="//speakerdeck.com/player/7b754d59b56446598afccdf8c56de28c"/>*/}
 
             <FirebaseAuth />
           </div>
@@ -78,6 +77,7 @@ class FromTeal extends Component {
               <Route path="/teams/:id" exact component={TeamChannel} />
               <Route path="/teams" exact component={Teams} />
               <Route path="/auth" exact component={FirebaseAuth} />
+              <Route path="/logout" exact component={FirebaseLogout} />
               <Route path="/" exact component={Teams} />
               {/* <Route render={() => <h1>Not found</h1>}/> */}
               {/* <Redirect from="/" to="/teams" /> */}
@@ -88,7 +88,7 @@ class FromTeal extends Component {
 
       return (
         <AuthContext.Provider
-          value={{ isAuth: this.state.isAuth, user: this.state.user, toggleAuth: this.toggleAuth }}>
+              value={{ isAuth: this.state.isAuth, setAuthState: this.setAuthState, user: this.state.currentUser}}>
           <Layout>
             <div className="FromTeal">
               {content}

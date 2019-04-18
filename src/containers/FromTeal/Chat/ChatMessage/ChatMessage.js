@@ -14,7 +14,7 @@ class ChatMessage extends Component {
 
     switch ( this.props.type ) {
       case ('text-message'):
-        message = <div className={'TextMessage'}><pre>{this.props.text}</pre></div>
+        message = <div className={'TextMessage'}>{this.props.text}</div>
         break
       case ('image-message'):
         message = <div className={'ImageMessage'}><img src={this.props.imageUrl} width="250px"/></div>
@@ -31,7 +31,7 @@ class ChatMessage extends Component {
           <img src={dibauAvatar} alt="Avatar"></img>
           <span className={'SpeechAct'}>{this.props.speechAct} {this.props.entityType} {this.props.entityId}</span>
           {message}
-          <span class="time-right">{this.props.created.toDate().toLocaleString()}</span>
+          <span className="time-right">{this.props.created.toDate().toLocaleString()}</span>
         </div>
     )
   }

@@ -76,7 +76,9 @@ class TeamChannel extends Component {
         entityType: entityType,
         entityId: entityId,
         text: text,
-        user: "dibaunaumh@gmail.com",
+        user: this.context.user.email,
+        user_name: this.context.user.name,
+        user_avatar: this.context.user.picture,
         created: new Date()
     })
     .then(function(docRef) {
