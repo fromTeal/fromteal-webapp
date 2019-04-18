@@ -10,8 +10,15 @@ class FirebaseLogout extends Component {
   static contextType = AuthContext
 
 
-  componentDidMount = () => {
-    firebase.auth().signOut().then(function() {
+    clearUserDetails = () => {
+        console.log("clearUserDetails")
+        localStorage.clear()
+    }
+
+    componentDidMount = () => {
+      this.clearUserDetails()
+      this.context.setAuthState(false)
+      firebase.auth().signOut().then(function() {
       console.log('Signed Out');
     }, function(error) {
       console.error('Sign Out Error', error);

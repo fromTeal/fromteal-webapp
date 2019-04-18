@@ -34,12 +34,6 @@ class FirebaseAuth extends Component {
     localStorage.setItem('user_picture', user.picture)
   }
 
-  clearUserDetails = () => {
-    console.log("clearUserDetails")
-    localStorage.clear()
-  }
-
-
   // Listen to the Firebase Auth state and set the local state.
   componentDidMount() {
     this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
@@ -55,7 +49,6 @@ class FirebaseAuth extends Component {
             this.storeUserDetails(userModel)
             this.context.setAuthState(true, userModel)
           } else {
-            this.clearUserDetails()
             this.context.setAuthState(false, null)
           }
         }
