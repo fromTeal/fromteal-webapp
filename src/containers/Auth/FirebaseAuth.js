@@ -26,6 +26,20 @@ class FirebaseAuth extends Component {
     ]
   }
 
+  storeUserDetails = (user) => {
+    console.log("storeUserDetails")
+    localStorage.clear()
+    localStorage.setItem('user_name', user.name)
+    localStorage.setItem('user_email', user.email)
+    localStorage.setItem('user_picture', user.picture)
+  }
+
+  clearUserDetails = () => {
+    console.log("clearUserDetails")
+    localStorage.clear()
+  }
+
+
   // Listen to the Firebase Auth state and set the local state.
   componentDidMount() {
     this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
