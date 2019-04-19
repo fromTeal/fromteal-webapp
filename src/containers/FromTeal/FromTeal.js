@@ -65,7 +65,7 @@ class FromTeal extends Component {
               <strong> realize their dream projects</strong>. See how it works:
             </p>
 
-            {/*<iframe style={iframeStyle} width="500" height="350" src="//speakerdeck.com/player/7b754d59b56446598afccdf8c56de28c"/>*/}
+            <iframe style={iframeStyle} width="500" height="350" src="//speakerdeck.com/player/7b754d59b56446598afccdf8c56de28c"/>
 
             <FirebaseAuth />
           </div>
