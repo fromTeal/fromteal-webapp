@@ -4,8 +4,11 @@ import Chat from '../Chat/Chat'
 import ChatInput from '../Chat/ChatInput/ChatInput'
 import Spinner from '../../../components/UI/Spinner/Spinner'
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
+import AuthContext from '../../auth-context'
 
 class TeamChannel extends Component {
+  static contextType = AuthContext
+
   state = {
     messages: [],
     speechActs: [
@@ -77,8 +80,8 @@ class TeamChannel extends Component {
         entityId: entityId,
         text: text,
         user: this.context.user.email,
-        user_name: this.context.user.name,
-        user_avatar: this.context.user.picture,
+        userName: this.context.user.name,
+        userPicture: this.context.user.picture,
         created: new Date()
     })
     .then(function(docRef) {
