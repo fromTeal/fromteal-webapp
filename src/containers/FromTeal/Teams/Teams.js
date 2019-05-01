@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router-dom';
+import axios from 'axios'
 
 import Team from '../Team/Team';
 import './Teams.css';
+
+
+const TEAMS_ENDPOINT = "https://us-central1-manual-pilot.cloudfunctions.net/getMyTeams"
+
 
 class Teams extends Component {
     state = {
@@ -11,44 +16,44 @@ class Teams extends Component {
 
     componentDidMount () {
         console.log( this.props );
-        // axios.get( '/teams' )
-        //     .then( response => {
-        //         const teams = response.data.slice( 0, 4 );
-        //         const updatedPosts = teams.map( team => {
-        //             return {
-        //                 ...team,
-        //                 tags: 'something'
-        //             }
-        //         } );
-        //         this.setState( { teams: updatedTeams } );
-        //         // console.log( response );
-        //     } )
-        //     .catch( error => {
-        //         console.log( error );
-        //         // this.setState({error: true});
-        //     } );
-        this.setState({
-          teams: [
-            {
-              id: "fromTeal",
-              name: "fromTeal",
-              purpose: "enable people to work on what they love, love their work, & make a living out of it.",
-              tags: "organizing"
-            },
-            {
-                id: "manual-pilot",
-                name: "Manual Pilot",
-                purpose: "help you spend more time on the things that are important to you.",
-                tags: "life"
-            },
-            {
-              id: "w2m",
-              name: "W2M",
-              purpose: "empower people to handle more information",
-              tags: "visualization"
-            }
-          ]
-        })
+        axios.get( TEAMS_ENDPOINT )
+            .then( response => {
+                const teams = response.data.slice( 0, 4 );
+                const updatedTeams = teams.map( team => {
+                    return {
+                        ...team,
+                        id: team.name
+                    }
+                } );
+                this.setState( { teams: updatedTeams } );
+                // console.log( response );
+            } )
+            .catch( error => {
+                console.log( error );
+                // this.setState({error: true});
+            } );
+        // this.setState({
+        //   teams: [
+        //     {
+        //       id: "fromTeal",
+        //       name: "fromTeal",
+        //       purpose: "enable people to work on what they love, love their work, & make a living out of it.",
+        //       tags: "organizing"
+        //     },
+        //     {
+        //         id: "manual-pilot",
+        //         name: "Manual Pilot",
+        //         purpose: "help you spend more time on the things that are important to you.",
+        //         tags: "life"
+        //     },
+        //     {
+        //       id: "w2m",
+        //       name: "W2M",
+        //       purpose: "empower people to handle more information",
+        //       tags: "visualization"
+        //     }
+        //   ]
+        // })
     }
 
     teamSelectedHandler = ( id ) => {
