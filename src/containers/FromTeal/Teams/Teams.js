@@ -62,6 +62,7 @@ class Teams extends Component {
                         name={team.name}
                         purpose={team.purpose}
                         tags={team.tags}
+                        members={team.members}
                         clicked={() => this.teamSelectedHandler( team.id )} />
                     // </Link>
                 );
