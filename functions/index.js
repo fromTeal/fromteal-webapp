@@ -4,7 +4,6 @@ const cors = require('cors')({
     origin: true,
 });
 
-// const serviceAccount = require('../fromteal-sa.json');
 
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
@@ -14,14 +13,35 @@ const db = admin.firestore();
 
 exports.getMyTeams = functions.https.onRequest((req, res) => {
     cors(req, res, () => {
-        const query = db.collection('teams').get().then((snapshot) => {
-            const teams = []
-            snapshot.forEach(doc => teams.push(doc.data()))
-            return res.send(teams)
-        })
+        const idToken = req.header('me')
+        verifyUser(idToken)
+            .then(queryUserTeams)
+            .then((snapshot) => {
+                const teams = extractTeams(snapshot)
+                return res.send(teams)
+            }).catch((error) => {
+                res.status(500).send(error)
+            })
     })
 });
 
+const verifyUser = (idToken) => {
+    return admin.auth().verifyIdToken(idToken)
+}
+
+const queryUserTeams = (user) => {
+    console.log("performing query using user", user.email)
+    return db.collection('teams')
+        .where("members", "array-contains", user.email)
+        .get()
+}
+
+const extractTeams = (snapshot) => {
+    const teams = []
+    snapshot.forEach(doc => teams.push(doc.data()))
+    console.log("teams enumerated:", teams)
+    return teams
+}
 
 exports.sendMessage = functions.https.onRequest((req, res) => {
     const text = req.query.text
