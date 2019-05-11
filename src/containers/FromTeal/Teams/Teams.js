@@ -48,7 +48,7 @@ class Teams extends Component {
 
     teamSelectedHandler = ( id ) => {
         // this.props.history.push({pathname: '/teams/' + id});
-        this.props.history.push( '/teams/' + id );
+        this.props.history.push( '/my_teams/' + id );
     }
 
     render () {

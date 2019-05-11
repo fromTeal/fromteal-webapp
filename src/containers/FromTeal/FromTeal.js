@@ -75,8 +75,8 @@ class FromTeal extends Component {
         content = (
           <Switch>
               {this.state.isAuth ? <Route path="/new-team" component={AsyncNewTeam} /> : null}
-              <Route path="/teams/:id" exact component={TeamChannel} />
-              <Route path="/teams" exact component={Teams} />
+              <Route path="/my_teams/:id" exact component={TeamChannel} />
+              <Route path="/my_teams" exact component={Teams} />
               <Route path="/auth" exact component={FirebaseAuth} />
               <Route path="/logout" exact component={FirebaseLogout} />
               <Route path="/" exact component={Teams} />
