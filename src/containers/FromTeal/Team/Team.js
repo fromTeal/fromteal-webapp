@@ -18,7 +18,8 @@ class Team extends Component {
           <h1>{this.props.name}</h1>
           <div className="Info">
             <div className="Purpose">{this.props.purpose}</div>
-            <div className="Tags">{this.props.tags}</div>
+            <div className="members">{this.props.members.length} members</div>
+              <div className="Tags">{this.props.tags.join(", ")}</div>
           </div>
       </article>
     )

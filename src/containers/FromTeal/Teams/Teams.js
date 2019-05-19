@@ -1,8 +1,14 @@
 import React, { Component } from 'react';
-import { Route } from 'react-router-dom';
+import firebase from '../../../firebase/firebase-config'
+import axios from 'axios'
 
 import Team from '../Team/Team';
 import './Teams.css';
+
+
+const TEAMS_ENDPOINT = "https://us-central1-manual-pilot.cloudfunctions.net/getMyTeams"
+// const TEAMS_ENDPOINT = "http://localhost:5000/manual-pilot/us-central1/getMyTeams"
+// console.log("ERRRRRRRROOOORRRRRRRR: USING LOCAL ENDPOINTS!!!!!!")
 
 class Teams extends Component {
     state = {
@@ -11,49 +17,38 @@ class Teams extends Component {
 
     componentDidMount () {
         console.log( this.props );
-        // axios.get( '/teams' )
-        //     .then( response => {
-        //         const teams = response.data.slice( 0, 4 );
-        //         const updatedPosts = teams.map( team => {
-        //             return {
-        //                 ...team,
-        //                 tags: 'something'
-        //             }
-        //         } );
-        //         this.setState( { teams: updatedTeams } );
-        //         // console.log( response );
-        //     } )
-        //     .catch( error => {
-        //         console.log( error );
-        //         // this.setState({error: true});
-        //     } );
-        this.setState({
-          teams: [
-            {
-              id: "fromTeal",
-              name: "fromTeal",
-              purpose: "enable people to work on what they love, love their work, & make a living out of it.",
-              tags: "organizing"
-            },
-            {
-                id: "manual-pilot",
-                name: "Manual Pilot",
-                purpose: "help you spend more time on the things that are important to you.",
-                tags: "life"
-            },
-            {
-              id: "w2m",
-              name: "W2M",
-              purpose: "empower people to handle more information",
-              tags: "visualization"
-            }
-          ]
-        })
+        firebase.auth().currentUser.getIdToken(true).then((idToken) => {
+
+            axios.get( TEAMS_ENDPOINT, {headers: {'me': idToken}} )
+                .then( response => {
+                    console.log(response.data)
+                    const teams = response.data.slice( 0, 4 );
+                    const updatedTeams = teams.map( team => {
+                        return {
+                            ...team,
+                            id: team.name
+                        }
+                    } );
+                    this.setState( { teams: updatedTeams } );
+                    // console.log( response );
+                } )
+                .catch( error => {
+                    console.log( error );
+                    // this.setState({error: true});
+                } );
+
+        }).catch(function(error) {
+            console.log( error );
+            // Handle error
+        });
+
+
+
     }
 
     teamSelectedHandler = ( id ) => {
         // this.props.history.push({pathname: '/teams/' + id});
-        this.props.history.push( '/teams/' + id );
+        this.props.history.push( '/my_teams/' + id );
     }
 
     render () {
@@ -67,6 +62,7 @@ class Teams extends Component {
                         name={team.name}
                         purpose={team.purpose}
                         tags={team.tags}
+                        members={team.members}
                         clicked={() => this.teamSelectedHandler( team.id )} />
                     // </Link>
                 );
