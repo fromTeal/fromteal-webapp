@@ -57,3 +57,36 @@ exports.sendMessage = functions.https.onRequest((req, res) => {
             ref: snapshot.ref
         }));
 });
+
+
+exports.handleMessage = functions.firestore.document('/messages/simple/{teamId}/{documentId}')
+    .onCreate((snap, context) => {
+        console.log("Yay, invoked")
+        const message = snap.data()
+        const triggeringMessageId = context.params.documentId
+
+        // write entity
+        const teamId = context.params.teamId
+        const entityId = message.entityId
+        const speechAct = message.speechAct
+        const entityType = message.entityType
+        const entityText = message.text
+        const entityUser = message.user
+        const entityStatus = "suggested"  // TODO determine based on speechAct & transition
+
+        // lookup transition metadata
+
+
+        // invoke change function (create/update/delete)
+
+       return db.collection(`entities/${entityType}/${teamId}`).add({
+            id: entityId,
+            teamId: teamId,
+            text: entityText,
+            user: entityUser,
+            status: entityStatus,
+            created: new Date(),
+            triggeringMessage: triggeringMessageId
+        })
+
+    })

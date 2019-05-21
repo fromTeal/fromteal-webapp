@@ -52,7 +52,7 @@ class TeamChannel extends Component {
     db.settings({
       timestampsInSnapshots: true
     });
-    db.collection(`communicate/${teamId}/messages`).orderBy("created")
+    db.collection(`messages/simple/${teamId}`).orderBy("created")
         .onSnapshot((querySnapshot) => {
           this.setState({loading: false})
           querySnapshot.docChanges().forEach((change) => {
@@ -73,7 +73,7 @@ class TeamChannel extends Component {
 
   addMessage = (speechAct, entityType, entityId, text, teamId) => {
     const db = firebase.firestore()
-    db.collection(`communicate/${teamId}/messages`).add({
+    db.collection(`messages/simple/${teamId}`).add({
         type: "text-message",
         speechAct: speechAct,
         entityType: entityType,
