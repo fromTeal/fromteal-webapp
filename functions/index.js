@@ -5,6 +5,129 @@ const cors = require('cors')({
 });
 
 
+const SINGLE_ATTRIBUTE_STATES = [
+  "suggested",
+  "discussed",
+  "approved",
+  "declined",
+  "replaced",
+  "deleted"
+]
+
+const SINGLE_ATTRIBUTE_TRANSITIONS = {
+  "suggest": {
+    from: [],
+    to: "suggested"
+  },
+  "discuss": {
+    from: ["suggested"],
+    to: "discussed"
+  },
+  "approve": {
+    from: ["discussed", "declined", "replaced"],
+    to: "approved"
+  },
+  "decline": {
+    from: ["discussed", "approved"],
+    to: "declined"
+  },
+  "delete": {
+    from: SINGLE_ATTRIBUTE_STATES,
+    to: "deleted"
+  }
+}
+
+
+
+const MULTIPLE_ATTRIBUTE_STATES = [
+  "suggested",
+  "discussed",
+  "approved",
+  "declined",
+  "deleted"
+]
+
+const MULTIPLE_ATTRIBUTE_TRANSITIONS = {
+  "suggest": {
+    from: [],
+    to: "suggested"
+  },
+  "discuss": {
+    from: ["suggested"],
+    to: "discussed"
+  },
+  "approve": {
+    from: ["discussed", "declined"],
+    to: "approved"
+  },
+  "decline": {
+    from: ["discussed", "approved"],
+    to: "declined"
+  },
+  "delete": {
+    from: MULTIPLE_ATTRIBUTE_STATES,
+    to: "deleted"
+  }
+}
+
+const ENTITIES_METADATA = {
+  //
+  // purpose
+  //
+  purpose: {
+    data_type: "string",
+    max_cardinality: 1,
+    states: SINGLE_ATTRIBUTE_STATES,
+    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
+  },
+  //
+  // name
+  //
+  name: {
+    data_type: "short_string",
+    max_cardinality: 1,
+    states: SINGLE_ATTRIBUTE_STATES,
+    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
+  },
+  //
+  // description
+  //
+  description: {
+    data_type: "string",
+    max_cardinality: 1,
+    states: SINGLE_ATTRIBUTE_STATES,
+    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
+  },
+  //
+  // logo
+  //
+  logo: {
+    data_type: "image_url",
+    max_cardinality: 1,
+    states: SINGLE_ATTRIBUTE_STATES,
+    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
+  },
+  //
+  // intro
+  //
+  intro: {
+    data_type: "video_url",
+    max_cardinality: 1,
+    states: SINGLE_ATTRIBUTE_STATES,
+    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
+  },
+  //
+  // tool
+  //
+  tool: {
+    data_type: "tool",
+    states: MULTIPLE_ATTRIBUTE_STATES,
+    transitions: MULTIPLE_ATTRIBUTE_TRANSITIONS
+  }
+}
+
+
+
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
     databaseURL: "https://manual-pilot.firebaseio.com"
