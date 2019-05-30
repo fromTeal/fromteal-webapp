@@ -2,129 +2,10 @@ const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 const cors = require('cors')({
     origin: true,
-});
+})
+const conversation = require('./conversation')
 
 
-const SINGLE_ATTRIBUTE_STATES = [
-  "suggested",
-  "discussed",
-  "approved",
-  "declined",
-  "replaced",
-  "deleted"
-]
-
-const SINGLE_ATTRIBUTE_TRANSITIONS = {
-  "suggest": {
-    from: [],
-    to: "suggested"
-  },
-  "discuss": {
-    from: ["suggested"],
-    to: "discussed"
-  },
-  "approve": {
-    from: ["discussed", "declined", "replaced"],
-    to: "approved"
-  },
-  "decline": {
-    from: ["discussed", "approved"],
-    to: "declined"
-  },
-  "delete": {
-    from: SINGLE_ATTRIBUTE_STATES,
-    to: "deleted"
-  }
-}
-
-
-
-const MULTIPLE_ATTRIBUTE_STATES = [
-  "suggested",
-  "discussed",
-  "approved",
-  "declined",
-  "deleted"
-]
-
-const MULTIPLE_ATTRIBUTE_TRANSITIONS = {
-  "suggest": {
-    from: [],
-    to: "suggested"
-  },
-  "discuss": {
-    from: ["suggested"],
-    to: "discussed"
-  },
-  "approve": {
-    from: ["discussed", "declined"],
-    to: "approved"
-  },
-  "decline": {
-    from: ["discussed", "approved"],
-    to: "declined"
-  },
-  "delete": {
-    from: MULTIPLE_ATTRIBUTE_STATES,
-    to: "deleted"
-  }
-}
-
-const ENTITIES_METADATA = {
-  //
-  // purpose
-  //
-  purpose: {
-    data_type: "string",
-    max_cardinality: 1,
-    states: SINGLE_ATTRIBUTE_STATES,
-    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
-  },
-  //
-  // name
-  //
-  name: {
-    data_type: "short_string",
-    max_cardinality: 1,
-    states: SINGLE_ATTRIBUTE_STATES,
-    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
-  },
-  //
-  // description
-  //
-  description: {
-    data_type: "string",
-    max_cardinality: 1,
-    states: SINGLE_ATTRIBUTE_STATES,
-    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
-  },
-  //
-  // logo
-  //
-  logo: {
-    data_type: "image_url",
-    max_cardinality: 1,
-    states: SINGLE_ATTRIBUTE_STATES,
-    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
-  },
-  //
-  // intro
-  //
-  intro: {
-    data_type: "video_url",
-    max_cardinality: 1,
-    states: SINGLE_ATTRIBUTE_STATES,
-    transitions: SINGLE_ATTRIBUTE_TRANSITIONS
-  },
-  //
-  // tool
-  //
-  tool: {
-    data_type: "tool",
-    states: MULTIPLE_ATTRIBUTE_STATES,
-    transitions: MULTIPLE_ATTRIBUTE_TRANSITIONS
-  }
-}
 
 
 
@@ -169,11 +50,13 @@ const extractTeams = (snapshot) => {
 exports.sendMessage = functions.https.onRequest((req, res) => {
     const text = req.query.text
     const teamId = req.query.teamId
-    let ref = db.ref(`communicate/${teamId}/messages`)
 
-    let insert = ref.push({
+    let ref = db.collection(`communicate/${teamId}/messages`)
+
+    let insert = ref.add({
         teamId: teamId,
         text: text,
+
     }).then(snapshot =>
         res.send({
             status: "OK",
@@ -188,28 +71,114 @@ exports.handleMessage = functions.firestore.document('/messages/simple/{teamId}/
         const message = snap.data()
         const triggeringMessageId = context.params.documentId
 
-        // write entity
         const teamId = context.params.teamId
-        const entityId = message.entityId
-        const speechAct = message.speechAct
-        const entityType = message.entityType
-        const entityText = message.text
-        const entityUser = message.user
-        const entityStatus = "suggested"  // TODO determine based on speechAct & transition
+        const msgIntent = conversation.detectIntent(message)
 
-        // lookup transition metadata
-
-
-        // invoke change function (create/update/delete)
-
-       return db.collection(`entities/${entityType}/${teamId}`).add({
-            id: entityId,
-            teamId: teamId,
-            text: entityText,
-            user: entityUser,
-            status: entityStatus,
-            created: new Date(),
-            triggeringMessage: triggeringMessageId
-        })
-
+        switch (msgIntent.basicIntent) {
+          case 'create':
+            return createEntity(msgIntent, teamId, triggeringMessageId)
+          case 'update':
+              return updateEntity(msgIntent, teamId, triggeringMessageId)
+          case 'list':
+              return listEntities(msgIntent, teamId, triggeringMessageId)
+        default:
+            console.log("Message ignored - not a supported action")
+        }
     })
+
+
+const createEntity = (intent, teamId, triggeringMessageId) => {
+  console.log(`Creating new ${intent.entityType} ${intent.entityId}, for team ${teamId}`)
+  const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
+  return ref.doc(`${intent.entityId}`).set({
+    id: intent.entityId,
+    teamId: teamId,
+    text: intent.text,
+    user: intent.user,
+    status: intent.toStatus,
+    created: new Date(),
+    createMessage: triggeringMessageId
+  }).then(snapshot => {
+      const text = `${intent.entityType} ${intent.entityId} ${intent.toStatus}`
+      console.log(text)
+      // Send a message back
+      let ref = db.collection(`messages/simple/${teamId}`)
+      return ref.add({
+          speechAct: "notify",
+          teamId: teamId,
+          type: "text-message",
+          text: text,
+          user: "bot@fromteal.app",
+          userName: "fromTeal",
+          userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
+          created: new Date()
+      })
+  }).catch(err => {
+      console.log('Error creating entity', err);
+  })
+}
+
+
+const updateEntity = (intent, teamId, triggeringMessageId) => {
+  console.log(`Updating ${intent.entityType} ${intent.entityId} to status ${intent.toStatus}, for team ${teamId}`)
+  const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
+  return ref.doc(`${intent.entityId}`).set({
+    id: intent.entityId,
+    teamId: teamId,
+    text: intent.text,
+    user: intent.user,
+    status: intent.toStatus,
+    updated: new Date(),
+    lastUpdateMessage: triggeringMessageId
+  }).then(snapshot => {
+    const text = `${intent.entityType} ${intent.entityId} ${intent.toStatus}`
+    console.log(text)
+    // Send a message back
+    let ref = db.collection(`messages/simple/${teamId}`)
+    return ref.add({
+            speechAct: "notify",
+            teamId: teamId,
+            type: "text-message",
+            text: text,
+            user: "bot@fromteal.app",
+            userName: "fromTeal",
+            userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
+            created: new Date()
+        })
+    }).catch(err => {
+        console.log('Error updating entity', err);
+    })
+}
+
+
+const listEntities = (intent, teamId, triggeringMessageId) => {
+    console.log(`Listing ${intent.entityType}, for team ${teamId}`)
+    const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
+    return ref.where("status", ">", "DELETED").get().then(snapshot => {
+        const entities = []
+        let text = ""
+        let token = `${intent.entityType} list: `
+        snapshot.forEach(doc => {
+            const entity = doc.data()
+            entities.push(entity)
+            text = `${text}${token}[${entity.id}] ${entity.text}`
+            token = ", "
+        })
+        console.log(entities)
+        // Send a message back
+        let ref = db.collection(`messages/simple/${teamId}`)
+        return ref.add({
+            speechAct: "answer",
+            teamId: teamId,
+            type: "text-message",
+            text: text,
+            user: "bot@fromteal.app",
+            userName: "fromTeal",
+            userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
+            created: new Date()
+        })
+    }).catch(err => {
+        console.log('Error getting list of entities', err);
+    });
+    
+}

@@ -12,34 +12,42 @@ class TeamChannel extends Component {
   state = {
     messages: [],
     speechActs: [
-      "apply",
+      "suggest",
+      "discuss",
       "approve",
       "decline",
-      "deactivate",
-      "defer",
-      "discuss",
+      "delete",
+      "list",
       "invite",
-      "notify",
-      "remove",
-      "release",
-      "replace",
-      "start",
-      "suggest",
-      "validate"
+      "add",
+      // the following aren't supported yet
+      // "apply",
+      // "deactivate",
+      // "defer",
+      // "notify",
+      // "remove",
+      // "release",
+      // "replace",
+      // "start",
+      // "validate"
     ],
     entityTypes: [
-      "member",
       "purpose",
       "logo",
-      "team-name",
-      "product-concept",
-      "ux-spec",
-      "tech-spec",
-      "use-case",
+      "name",
+      "description",
+      "intro",
+      "tag",
       "tool",
-      "user",
-      "metric",
-      "progress"
+      "member",
+      // the following aren't supported yet
+      // "product-concept",
+      // "ux-spec",
+      // "tech-spec",
+      // "use-case",
+      // "user",
+      // "metric",
+      // "progress"
     ],
     loading: true
   }
