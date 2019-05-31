@@ -91,76 +91,74 @@ async function messageHandler(snap, context) {
 }
 
 const createEntity = async (intent, teamId, triggeringMessageId) => {
-  console.log(`Creating new ${intent.entityType} ${intent.entityId}, for team ${teamId}`)
-  const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
-  return ref.doc(`${intent.entityId}`).set({
-    id: intent.entityId,
-    teamId: teamId,
-    text: intent.text,
-    user: intent.user,
-    status: intent.toStatus,
-    created: new Date(),
-    createMessage: triggeringMessageId
-  }).then(async (snapshot) => {
-      intent.teamId = teamId
-      const messageId = await publishMessage("entity_created", intent)
-      console.log(`Message ${messageId} sent to topic: entity_created`)
-
-      const text = `${intent.entityType} ${intent.entityId} ${intent.toStatus}`
-      console.log(text)
-      // Send a message back
-      let ref = db.collection(`messages/simple/${teamId}`)
-      return ref.add({
-          speechAct: "notify",
-          teamId: teamId,
-          type: "text-message",
-          text: text,
-          user: "bot@fromteal.app",
-          userName: "fromTeal",
-          userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
-          created: new Date()
-      })
-  }).catch(err => {
-      console.log('Error creating entity', err);
-  })
+    try {
+        const snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
+        intent.teamId = teamId
+        const messageId = await publishEvent("entity_created", intent)
+        console.log(`Message ${messageId} sent to topic: entity_created`)
+        return notifyOnEntityChange(intent, teamId)
+    } catch (err) {
+      console.log('Error creating entity', err)
+    }
 }
 
 
-const updateEntity = async (intent, teamId, triggeringMessageId) => {
-  console.log(`Updating ${intent.entityType} ${intent.entityId} to status ${intent.toStatus}, for team ${teamId}`)
-  const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
-  return ref.doc(`${intent.entityId}`).set({
-    id: intent.entityId,
-    teamId: teamId,
-    text: intent.text,
-    user: intent.user,
-    status: intent.toStatus,
-    updated: new Date(),
-    lastUpdateMessage: triggeringMessageId
-  }).then(async (snapshot) => {
-    intent.teamId = teamId
-    const messageId = await publishMessage("entity_updated", intent)
-    console.log(`Message ${messageId} sent to topic: entity_updated`)
+const createEntityRecord = (intent, teamId, triggeringMessageId) => {
+    console.log(`Creating new ${intent.entityType} ${intent.entityId}, for team ${teamId}`)
+    const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
+    return ref.doc(`${intent.entityId}`).set({
+      id: intent.entityId,
+      teamId: teamId,
+      text: intent.text,
+      user: intent.user,
+      status: intent.toStatus,
+      created: new Date(),
+      createMessage: triggeringMessageId
+    })
+}
 
+const notifyOnEntityChange = (intent, teamId) => {
     const text = `${intent.entityType} ${intent.entityId} ${intent.toStatus}`
     console.log(text)
     // Send a message back
     let ref = db.collection(`messages/simple/${teamId}`)
     return ref.add({
-            speechAct: "notify",
-            teamId: teamId,
-            type: "text-message",
-            text: text,
-            user: "bot@fromteal.app",
-            userName: "fromTeal",
-            userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
-            created: new Date()
-        })
-    }).catch(err => {
-        console.log('Error updating entity', err);
+        speechAct: "notify",
+        teamId: teamId,
+        type: "text-message",
+        text: text,
+        user: "bot@fromteal.app",
+        userName: "fromTeal",
+        userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
+        created: new Date()
     })
 }
 
+const updateEntity = async (intent, teamId, triggeringMessageId) => {
+    try {
+        const snapshot = await updateEntityRecord(intent, teamId, triggeringMessageId)
+        intent.teamId = teamId
+        const messageId = await publishEvent("entity_updated", intent)
+        console.log(`Message ${messageId} sent to topic: entity_updated`)
+        return notifyOnEntityChange(intent, teamId)
+    } catch (err) {
+        console.log('Error updating entity', err)
+    }
+}
+
+const updateEntityRecord = (intent, teamId, triggeringMessageId) => {
+    console.log(`Updating ${intent.entityType} ${intent.entityId} to status ${intent.toStatus}, for team ${teamId}`)
+    const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
+    return ref.doc(`${intent.entityId}`).set({
+      id: intent.entityId,
+      teamId: teamId,
+      text: intent.text,
+      user: intent.user,
+      status: intent.toStatus,
+      updated: new Date(),
+      lastUpdateMessage: triggeringMessageId
+    })
+}
 
 const listEntities = (intent, teamId, triggeringMessageId) => {
     console.log(`Listing ${intent.entityType}, for team ${teamId}`)
@@ -195,7 +193,7 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
 }
 
 
-const publishMessage = async (topicName, data) => {
+const publishEvent = async (topicName, data) => {
     const pubsub = new PubSub({PROJECT_ID})
     const jsonData = JSON.stringify(data)
     const dataBuffer = Buffer.from(jsonData)
@@ -203,13 +201,13 @@ const publishMessage = async (topicName, data) => {
 }
 
 
-exports.handleEntityCreated = functions.pubsub.topic('entity_created')
+exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     .onPublish((message) => {
     // TODO is there something to do?
   });
 
 
-exports.handleEntityUpdated = functions.pubsub.topic('entity_updated')
+exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
     .onPublish((message) => {
      console.log(`team is ${message.json.teamId}`)
     // we only have tasks for approved entities, so ignore other states
