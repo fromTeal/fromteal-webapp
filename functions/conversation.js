@@ -1,5 +1,4 @@
-const entities = require('./entities')
-const ENTITIES_METADATA = entities.ENTITIES_METADATA
+const {ENTITIES_METADATA} = require('./entities')
 
 
 exports.detectIntent = (message) => {

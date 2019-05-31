@@ -21,6 +21,36 @@ describe('Conversation Functions', () => {
 
     describe('detectIntent', () => {
 
+
+        it('should detect suggest purpose message', () => {
+            const message = {
+                entityId: "🌱",
+                entityType: "purpose",
+                speechAct: "suggest",
+                text: "Make people awesome",
+                type: "text-message",
+                user: "user@example.org",
+                userName: "Nowbleed Forme"
+            }
+            const teamId = "team1"
+            const trigMsgId = "msg012"
+
+            const expectedIntent = {
+                basicIntent: "create",
+                entityId: "🌱",
+                entityType: "purpose",
+                metadataFound: true,
+                speechAct: "suggest",
+                text: "Make people awesome",
+                user: "user@example.org",
+                toStatus: "suggested",
+                validated: true
+            }
+            const got = conversationFunctions.detectIntent(message, teamId, trigMsgId)
+            return assert.deepEqual(got, expectedIntent);
+        })
+
+        
         it('should detect approve purpose message', () => {
             const message = {
                 entityId: "🌱",
@@ -35,8 +65,7 @@ describe('Conversation Functions', () => {
             const trigMsgId = "msg123"
 
             const expectedIntent = {
-                entityChange: true,
-                entityChangeType: "update",
+                basicIntent: "update",
                 entityId: "🌱",
                 entityType: "purpose",
                 metadataFound: true,
@@ -49,6 +78,37 @@ describe('Conversation Functions', () => {
             const got = conversationFunctions.detectIntent(message, teamId, trigMsgId)
             return assert.deepEqual(got, expectedIntent);
         })
+
+
+        it('should detect list purpose message', () => {
+            const message = {
+                entityId: "",
+                entityType: "purpose",
+                speechAct: "list",
+                text: "",
+                type: "text-message",
+                user: "user@example.org",
+                userName: "Nowbleed Forme"
+            }
+            const teamId = "team1"
+            const trigMsgId = "msg234"
+
+            const expectedIntent = {
+                basicIntent: "list",
+                entityId: "",
+                entityType: "purpose",
+                metadataFound: true,
+                speechAct: "list",
+                text: "",
+                user: "user@example.org",
+                toStatus: "",
+                validated: true
+            }
+            const got = conversationFunctions.detectIntent(message, teamId, trigMsgId)
+            return assert.deepEqual(got, expectedIntent);
+        })
+
+
     })
 
 })
