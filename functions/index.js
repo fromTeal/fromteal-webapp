@@ -148,17 +148,16 @@ const updateEntity = async (intent, teamId, triggeringMessageId) => {
     }
 }
 
-const updateEntityRecord = (intent, teamId, triggeringMessageId) => {
+const updateEntityRecord = async (intent, teamId, triggeringMessageId) => {
     console.log(`Updating ${intent.entityType} ${intent.entityId} to status ${intent.toStatus}, for team ${teamId}`)
+    // 1st, read the existing record, to make sure we don't override data
     const ref = db.collection(`entities/${intent.entityType}/${teamId}`)
+    const doc = await ref.doc(`${intent.entityId}`).get()
     return ref.doc(`${intent.entityId}`).set({
-      id: intent.entityId,
-      teamId: teamId,
-      text: intent.text,
-      user: intent.user,
-      status: intent.toStatus,
-      updated: new Date(),
-      lastUpdateMessage: triggeringMessageId
+        ...doc.data(),
+        status: intent.toStatus,
+        updated: new Date(),
+        lastUpdateMessage: triggeringMessageId
     })
 }
 
