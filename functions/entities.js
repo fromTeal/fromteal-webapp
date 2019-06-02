@@ -111,8 +111,9 @@ const SINGLE_ATTRIBUTE_STATES = [
     // purpose
     //
     purpose: {
-      data_type: "string",
-      max_cardinality: 1,
+      dataType: "string",
+      maxCardinality: 1,
+      teamAttribute: true,
       states: SINGLE_ATTRIBUTE_STATES,
       transitions: SINGLE_ATTRIBUTE_TRANSITIONS
     },
@@ -120,8 +121,9 @@ const SINGLE_ATTRIBUTE_STATES = [
     // name
     //
     name: {
-      data_type: "short_string",
-      max_cardinality: 1,
+      dataType: "short_string",
+      maxCardinality: 1,
+      teamAttribute: true,
       states: SINGLE_ATTRIBUTE_STATES,
       transitions: SINGLE_ATTRIBUTE_TRANSITIONS
     },
@@ -129,8 +131,9 @@ const SINGLE_ATTRIBUTE_STATES = [
     // description
     //
     description: {
-      data_type: "string",
-      max_cardinality: 1,
+      dataType: "string",
+      maxCardinality: 1,
+      teamAttribute: true,
       states: SINGLE_ATTRIBUTE_STATES,
       transitions: SINGLE_ATTRIBUTE_TRANSITIONS
     },
@@ -138,8 +141,9 @@ const SINGLE_ATTRIBUTE_STATES = [
     // logo
     //
     logo: {
-      data_type: "image_url",
-      max_cardinality: 1,
+      dataType: "image_url",
+      maxCardinality: 1,
+      teamAttribute: true,
       states: SINGLE_ATTRIBUTE_STATES,
       transitions: SINGLE_ATTRIBUTE_TRANSITIONS
     },
@@ -147,8 +151,9 @@ const SINGLE_ATTRIBUTE_STATES = [
     // intro
     //
     intro: {
-      data_type: "video_url",
-      max_cardinality: 1,
+      dataType: "video_url",
+      maxCardinality: 1,
+      teamAttribute: true,
       states: SINGLE_ATTRIBUTE_STATES,
       transitions: SINGLE_ATTRIBUTE_TRANSITIONS
     },
@@ -156,7 +161,8 @@ const SINGLE_ATTRIBUTE_STATES = [
     // tag
     //
     tag: {
-      data_type: "short_string",
+      dataType: "short_string",
+      teamAttribute: true,
       states: MULTIPLE_ATTRIBUTE_STATES,
       transitions: MULTIPLE_ATTRIBUTE_TRANSITIONS
     },
@@ -164,7 +170,8 @@ const SINGLE_ATTRIBUTE_STATES = [
     // tool
     //
     tool: {
-      data_type: "tool",
+      dataType: "tool",
+      teamAttribute: false,
       states: MULTIPLE_ATTRIBUTE_STATES,
       transitions: MULTIPLE_ATTRIBUTE_TRANSITIONS
     },
@@ -172,7 +179,8 @@ const SINGLE_ATTRIBUTE_STATES = [
     // member
     //
     member: {
-      data_type: "person",
+      dataType: "person",
+      teamAttribute: true,
       states: MEMBER_STATES,
       transitions: MEMBER_TRANSITIONS
     }

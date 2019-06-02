@@ -5,6 +5,8 @@ const cors = require('cors')({
     origin: true,
 })
 const conversation = require('./conversation')
+const {ENTITIES_METADATA} = require('./entities')
+
 
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT
@@ -203,23 +205,84 @@ const publishEvent = async (topicName, data) => {
 
 exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     .onPublish((message) => {
-    // TODO is there something to do?
+    // TODO implement (e.g., send email when adding member)
   });
 
 
 exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
-    .onPublish((message) => {
-     console.log(`team is ${message.json.teamId}`)
-    // we only have tasks for approved entities, so ignore other states
-    if (message.json.toStatus !== 'approved') return
-    switch (message.json.entityType) {
-        case 'purpose':
-            // look up other approved entities
-
-            // if found, update them to state 'replaced'
-
-            // update the team
-
-            break
+    .onPublish(async (message) => {
+     const event = message.json
+     const metadata = ENTITIES_METADATA[event.entityType]
+     console.log(`team is ${event.teamId}`)
+    // currently, we only handle events of approving entities, so ignoring other states
+    if (event.toStatus !== 'approved') return
+    // check whether this entity-type has max-cardinality=1 
+    if (metadata.maxCardinality === 1) {
+        // look up other approved entities of this type
+        const snapshot = await db.collection(`entities/${event.entityType}/${event.teamId}`)
+            .where("status", "==", "approved")
+            .get()
+        const updates = []
+        snapshot.forEach(doc => {
+            console.log(`considering update of ${doc.id}`)
+            console.log(doc.data())
+            if (doc.id !== event.entityId) {
+                console.log(`it is different than ${event.entityId}`)
+                updates.push(updateEntityStatus(doc.id, event.entityType, doc.data(), 'replaced'))
+            }
+        })
+        console.log(`got ${updates.length} updates`)
+        const results = await Promise.all(updates)
+        console.log('done')
     }
-});
+    // check whether this entity-type is a team attribute
+    if (ENTITIES_METADATA[event.entityType].teamAttribute) {
+        // if so, extract the attribute & update the team
+        let attributeName = event.entityType
+        let attributeValue = null
+        switch (metadata.dataType) {
+            case 'short_string':
+                attributeValue = event.entityId
+                break
+            case 'string':
+                attributeValue = event.text
+                break
+            default:
+                attributeValue = event.entityId
+        }
+        if (attributeValue !== null && attributeValue !== "") {
+            const isArrayAttribute = metadata.maxCardinality !== 1
+            if (isArrayAttribute) {
+                attributeName = `${attributeName}s`
+            }
+            return updateTeamAttribute(event.teamId, 
+                attributeName, 
+                attributeValue, 
+                isArrayAttribute)
+        }
+    }
+})
+
+
+const updateEntityStatus = async (entityId, entityType, entity, toStatus) => {
+    console.log(`Updating ${entityId} located entities/${entityType}/${entity.teamId} to:`)
+    entity.status = toStatus
+    console.log(entity)
+    return db.collection(`entities/${entityType}/${entity.teamId}`)
+        .doc(entityId)
+        .set(entity)
+}
+
+const updateTeamAttribute = async (teamId, attributeName, attributeValue, isArrayAttribute) => {
+    const ref = db.collection('teams')
+    const team = await ref.doc(teamId).get()
+    const teamData = team.data()
+    if (isArrayAttribute) {
+        if (!(attributeValue in teamData[attributeName])) {
+            teamData[attributeName].push(attributeValue)
+        }
+    } else {
+        teamData[attributeName] = attributeValue
+    }
+    return ref.doc(teamId).set(teamData)
+}
