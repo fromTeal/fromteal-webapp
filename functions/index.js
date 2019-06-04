@@ -211,6 +211,7 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
 exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
     .onPublish(async (message) => {
      const event = message.json
+     let newEntity = null
      const metadata = ENTITIES_METADATA[event.entityType]
      console.log(`team is ${event.teamId}`)
     // currently, we only handle events of approving entities, so ignoring other states
@@ -228,27 +229,32 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
             if (doc.id !== event.entityId) {
                 console.log(`it is different than ${event.entityId}`)
                 updates.push(updateEntityStatus(doc.id, event.entityType, doc.data(), 'replaced'))
+            } else {
+                newEntity = doc.data()
             }
         })
         console.log(`got ${updates.length} updates`)
         const results = await Promise.all(updates)
         console.log('done')
     }
+    console.log(`Is team attribute? ${metadata.teamAttribute}`)
     // check whether this entity-type is a team attribute
-    if (ENTITIES_METADATA[event.entityType].teamAttribute) {
+    if (metadata.teamAttribute) {
         // if so, extract the attribute & update the team
         let attributeName = event.entityType
         let attributeValue = null
+        console.log(`Checking dataType ${metadata.dataType}`)
         switch (metadata.dataType) {
             case 'short_string':
-                attributeValue = event.entityId
+                attributeValue = newEntity.entityId
                 break
             case 'string':
-                attributeValue = event.text
+                attributeValue = newEntity.text
                 break
             default:
-                attributeValue = event.entityId
+                attributeValue = newEntity.text || newEntity.entityId
         }
+        console.log(`About to update team: ${attributeValue}`)
         if (attributeValue !== null && attributeValue !== "") {
             const isArrayAttribute = metadata.maxCardinality !== 1
             if (isArrayAttribute) {
@@ -273,9 +279,11 @@ const updateEntityStatus = async (entityId, entityType, entity, toStatus) => {
 }
 
 const updateTeamAttribute = async (teamId, attributeName, attributeValue, isArrayAttribute) => {
+    console.log(`Updating ${teamId}: setting ${attributeName} to ${attributeValue}`)
     const ref = db.collection('teams')
     const team = await ref.doc(teamId).get()
     const teamData = team.data()
+    console.log(teamData)
     if (isArrayAttribute) {
         if (!(attributeValue in teamData[attributeName])) {
             teamData[attributeName].push(attributeValue)
@@ -283,5 +291,6 @@ const updateTeamAttribute = async (teamId, attributeName, attributeValue, isArra
     } else {
         teamData[attributeName] = attributeValue
     }
+    console.log(`Updating to: ${teamData}`)
     return ref.doc(teamId).set(teamData)
 }
