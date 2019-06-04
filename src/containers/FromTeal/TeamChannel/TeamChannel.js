@@ -12,34 +12,42 @@ class TeamChannel extends Component {
   state = {
     messages: [],
     speechActs: [
-      "apply",
+      "suggest",
+      "discuss",
       "approve",
       "decline",
-      "deactivate",
-      "defer",
-      "discuss",
+      "delete",
+      "list",
       "invite",
-      "notify",
-      "remove",
-      "release",
-      "replace",
-      "start",
-      "suggest",
-      "validate"
+      "add",
+      // the following aren't supported yet
+      // "apply",
+      // "deactivate",
+      // "defer",
+      // "notify",
+      // "remove",
+      // "release",
+      // "replace",
+      // "start",
+      // "validate"
     ],
     entityTypes: [
-      "member",
       "purpose",
       "logo",
-      "team-name",
-      "product-concept",
-      "ux-spec",
-      "tech-spec",
-      "use-case",
+      "name",
+      "description",
+      "intro",
+      "tag",
       "tool",
-      "user",
-      "metric",
-      "progress"
+      "member",
+      // the following aren't supported yet
+      // "product-concept",
+      // "ux-spec",
+      // "tech-spec",
+      // "use-case",
+      // "user",
+      // "metric",
+      // "progress"
     ],
     loading: true
   }
@@ -52,7 +60,7 @@ class TeamChannel extends Component {
     db.settings({
       timestampsInSnapshots: true
     });
-    db.collection(`communicate/${teamId}/messages`).orderBy("created")
+    db.collection(`messages/simple/${teamId}`).orderBy("created")
         .onSnapshot((querySnapshot) => {
           this.setState({loading: false})
           querySnapshot.docChanges().forEach((change) => {
@@ -73,7 +81,7 @@ class TeamChannel extends Component {
 
   addMessage = (speechAct, entityType, entityId, text, teamId) => {
     const db = firebase.firestore()
-    db.collection(`communicate/${teamId}/messages`).add({
+    db.collection(`messages/simple/${teamId}`).add({
         type: "text-message",
         speechAct: speechAct,
         entityType: entityType,
