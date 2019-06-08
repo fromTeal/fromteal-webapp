@@ -54,7 +54,7 @@ exports.sendMessage = functions.https.onRequest((req, res) => {
     const text = req.query.text
     const teamId = req.query.teamId
 
-    let ref = db.collection(`communicate/${teamId}/messages`)
+    let ref = db.collection(`messages/simple/${teamId}`)
 
     let insert = ref.add({
         teamId: teamId,
@@ -65,7 +65,7 @@ exports.sendMessage = functions.https.onRequest((req, res) => {
             status: "OK",
             ref: snapshot.ref
         }));
-});
+})
 
 
 exports.handleMessage = functions.firestore.document('/messages/simple/{teamId}/{documentId}')
@@ -294,3 +294,45 @@ const updateTeamAttribute = async (teamId, attributeName, attributeValue, isArra
     console.log(`Updating to: ${teamData}`)
     return ref.doc(teamId).set(teamData)
 }
+
+
+const createPersonalTeam = async (user) => {
+    // try to use the username part of the email
+    let teamName = user.email.split("@")[0]
+    // check whether this name is available
+    const ref = db.collection('teams')
+    const existingTeam = await ref.doc(teamName).get()    
+    // else, use the full email
+    if (existingTeam !== null) {
+        teamName = user.email
+    }
+    // create a team & mark it as personal team
+    const newTeam = await ref.doc(teamName).set({
+        name: teamName,
+        teamType: 'person',
+        createdBy: user.email,
+        createdAt: new Date()
+    })
+    return teamName
+}
+
+const firstSignIn = functions.https.onRequest(async (req, res) => {
+    cors(req, res, async () => {
+        try {
+            const idToken = req.header('me')
+            const user = await verifyUser(idToken)
+            console.log(`Handling 1st-sign-in of ${user.email}`)
+            user.teamName = await createPersonalTeam(user)
+            const messageId = await publishEvent("user_ready_for_onboard", user)
+            return res.send(user)
+        } catch (err) {
+            res.status(500).send(err)
+        }
+    })
+})
+
+
+
+
+
+
