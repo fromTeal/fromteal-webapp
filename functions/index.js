@@ -8,6 +8,7 @@ const conversation = require('./conversation')
 const {ENTITIES_METADATA} = require('./entities')
 
 
+const FROMTEAL_AVATAR = "http://fromTeal.app/static/media/logo.44c521dc.png"
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT
 
@@ -122,18 +123,7 @@ const createEntityRecord = (intent, teamId, triggeringMessageId) => {
 const notifyOnEntityChange = (intent, teamId) => {
     const text = `${intent.entityType} ${intent.entityId} ${intent.toStatus}`
     console.log(text)
-    // Send a message back
-    let ref = db.collection(`messages/simple/${teamId}`)
-    return ref.add({
-        speechAct: "notify",
-        teamId: teamId,
-        type: "text-message",
-        text: text,
-        user: "bot@fromteal.app",
-        userName: "fromTeal",
-        userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
-        created: new Date()
-    })
+    return sendMessageBackToUser(text, "notify", intent.entityType, "text-message", teamId)
 }
 
 const updateEntity = async (intent, teamId, triggeringMessageId) => {
@@ -175,22 +165,27 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
             token = ", "
         })
         console.log(entities)
-        // Send a message back
-        let ref = db.collection(`messages/simple/${teamId}`)
-        return ref.add({
-            speechAct: "answer",
-            teamId: teamId,
-            type: "text-message",
-            text: text,
-            user: "bot@fromteal.app",
-            userName: "fromTeal",
-            userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
-            created: new Date()
-        })
+        return sendMessageBackToUser(text, "answer", intent.entityType, "text-message", teamId)
     }).catch(err => {
         console.log('Error getting list of entities', err);
     });
     
+}
+
+
+const sendMessageBackToUser = (text, speechAct, entityType, type, teamId) => {
+    let ref = db.collection(`messages/simple/${teamId}`)
+    return ref.add({
+        speechAct: speechAct,
+        entityType: entityType,
+        teamId: teamId,
+        type: type,
+        text: text,
+        user: "bot@fromteal.app",
+        userName: "fromTeal",
+        userPicture: FROMTEAL_AVATAR,
+        created: new Date()
+    })
 }
 
 
@@ -313,17 +308,23 @@ const createPersonalTeam = async (user) => {
         createdBy: user.email,
         createdAt: new Date()
     })
-    return teamName
+    user.teamName = teamName
+    user.teamId = newTeam.id
+    return user
 }
 
 const firstSignIn = functions.https.onRequest(async (req, res) => {
     cors(req, res, async () => {
         try {
             const idToken = req.header('me')
-            const user = await verifyUser(idToken)
+            let user = await verifyUser(idToken)
             console.log(`Handling 1st-sign-in of ${user.email}`)
-            user.teamName = await createPersonalTeam(user)
-            const messageId = await publishEvent("user_ready_for_onboard", user)
+            user = await createPersonalTeam(user)
+            const eventId = await publishEvent("user_ready_for_onboard", user)
+            console.log(`Published event for user ${user.email} 1st sign-in: ${eventId}`)
+            // send a welcome message
+            const welcomeText = `Welcome to fromTeal, ${user.name}!`
+            const greetMsg = await sendMessageBackToUser(welcomeText, "greet", null, "text-message", user.teamId)
             return res.send(user)
         } catch (err) {
             res.status(500).send(err)
@@ -333,6 +334,12 @@ const firstSignIn = functions.https.onRequest(async (req, res) => {
 
 
 
+exports.handleEntityUpdatedEvent = functions.pubsub.topic('user_ready_for_onboard')
+    .onPublish((message) => {
+    const user = message.json
 
-
+    // ask the user about her purpose
+    const purposeAskText = "To continue, please tell us what would you really love to work on? The thing you would work on if you didn't have to work at all.. "
+    return sendMessageBackToUser(text, "ask", "purpose", "text-message", user.teamId)
+})
 
