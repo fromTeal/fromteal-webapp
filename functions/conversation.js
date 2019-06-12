@@ -19,14 +19,23 @@ exports.detectIntent = (message) => {
     if ('speechAct' in message) {
       intent.speechAct = message.speechAct
     }
+    else if ('inReplyTo' in message) {
+      // if no speech-act, but this is a reply, infer speechAct & entityType from the message being replied
+      const inReplyTo = message.inReplyTo
+      intent.speechAct = 'suggest'  // TODO use dialogs metadata
+      if (!('entityType' in intent) && 'entityType' in inReplyTo) {
+        intent.entityType = inReplyTo.entityType
+      }
+    } 
     if (intent.entityType in ENTITIES_METADATA) {
         intent.metadataFound = true
     }
+    // detect a list message
     if ('speechAct' in message && message.speechAct === "list") {
         intent.basicIntent = "list"
         intent.validated = true
     }
-    else if ('entityType' in message && 'speechAct' in message && intent.entityType in ENTITIES_METADATA) {
+    else if ('entityType' in intent && 'speechAct' in intent && intent.entityType in ENTITIES_METADATA) {
       const metadata = ENTITIES_METADATA[intent.entityType]
       if (intent.speechAct in metadata.transitions) {
         const transition = metadata.transitions[intent.speechAct]
