@@ -313,7 +313,7 @@ const createPersonalTeam = async (user) => {
     return user
 }
 
-const firstSignIn = functions.https.onRequest(async (req, res) => {
+exports.firstSignIn = functions.https.onRequest(async (req, res) => {
     cors(req, res, async () => {
         try {
             const idToken = req.header('me')

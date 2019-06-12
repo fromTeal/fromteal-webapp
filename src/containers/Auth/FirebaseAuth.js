@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 
 import { StyledFirebaseAuth } from 'react-firebaseui'
+import axios from 'axios'
 
 import firebase from '../../firebase/firebase-config'
 
@@ -40,8 +41,7 @@ class FirebaseAuth extends Component {
   }
 
   isFirstSignIn = (user) => {
-    // TODO implement better
-    return localStorage.getItem('user_name') !== null;
+    return (user.metadata.creationTime == user.metadata.lastSignInTime)
   }
 
   handleFirstSignIn = (user) => {

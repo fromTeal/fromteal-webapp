@@ -11,6 +11,7 @@ class TeamChannel extends Component {
 
   state = {
     messages: [],
+    lastMessage: null,
     speechActs: [
       "suggest",
       "discuss",
@@ -67,11 +68,13 @@ class TeamChannel extends Component {
             // TODO handle other changes - update & delete!
             if (change.type === "added") {
               this.setState((prevState) => {
+                const lastMessage = change.doc.data()
                   const newMessages = [...prevState.messages]
-                  newMessages.push(change.doc.data())
+                  newMessages.push(lastMessage)
                   return {
                     ...prevState,
-                    messages: newMessages
+                    messages: newMessages,
+                    lastMessage: lastMessage
                   }
                 })
               }
@@ -80,18 +83,24 @@ class TeamChannel extends Component {
   }
 
   addMessage = (speechAct, entityType, entityId, text, teamId) => {
+    const newMessage = {
+      type: "text-message",
+      speechAct: speechAct,
+      entityType: entityType,
+      entityId: entityId,
+      text: text,
+      user: this.context.user.email,
+      userName: this.context.user.name,
+      userPicture: this.context.user.picture,
+      created: new Date()
+    }
+    // check if the previous message was a question 
+    // - if it is, we can assume this message is an answer & mark it as a reply to the previous message
+    if (this.state.lastMessage && this.state.lastMessage.speechAct == 'ask') {
+      newMessage.inReplyTo = this.state.lastMessage
+    }
     const db = firebase.firestore()
-    db.collection(`messages/simple/${teamId}`).add({
-        type: "text-message",
-        speechAct: speechAct,
-        entityType: entityType,
-        entityId: entityId,
-        text: text,
-        user: this.context.user.email,
-        userName: this.context.user.name,
-        userPicture: this.context.user.picture,
-        created: new Date()
-    })
+    db.collection(`messages/simple/${teamId}`).add(newMessage)
     .then(function(docRef) {
         console.log("Document written with ID: ", docRef.id);
     })
