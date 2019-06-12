@@ -96,7 +96,8 @@ class TeamChannel extends Component {
     }
     // check if the previous message was a question 
     // - if it is, we can assume this message is an answer & mark it as a reply to the previous message
-    if (this.state.lastMessage && this.state.lastMessage.speechAct == 'ask') {
+    if (this.state.lastMessage && 
+      (this.state.lastMessage.speechAct === 'ask' || this.state.lastMessage.speechAct === 'confirm')) {
       newMessage.inReplyTo = this.state.lastMessage
     }
     const db = firebase.firestore()

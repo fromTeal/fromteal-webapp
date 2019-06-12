@@ -111,4 +111,24 @@ describe('Conversation Functions', () => {
 
     })
 
+
+    describe('classify', () => {
+
+        const positiveExamples = [
+            "Yes, it is"
+        ]
+        const negativeExamples = [
+
+        ]
+        const neutralExamples = [
+            
+        ]
+
+        it('should classify a positive answer', () => {
+            // TODO implement
+            return assert.equal(conversationFunctions.isPositive(positiveExamples[0]), true)
+        })
+
+    })
+
 })

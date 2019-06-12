@@ -22,9 +22,25 @@ exports.detectIntent = (message) => {
     else if ('inReplyTo' in message) {
       // if no speech-act, but this is a reply, infer speechAct & entityType from the message being replied
       const inReplyTo = message.inReplyTo
-      intent.speechAct = 'suggest'  // TODO use dialogs metadata
+      // TODO use dialogues metadata
+      switch (inReplyTo.speechAct) {
+        case 'ask':
+            intent.speechAct = 'suggest'
+            break
+        case 'confirm':
+            if (isPositive(inReplyTo.text)) {
+              intent.speechAct = 'approve'
+            }
+            else if (isNegative(inReplyTo.text)) {
+              intent.speechAct = 'decline'
+            }
+            break
+      }
       if (!('entityType' in intent) && 'entityType' in inReplyTo) {
         intent.entityType = inReplyTo.entityType
+      }
+      if (!('entityId' in intent) && 'entityId' in inReplyTo) {
+        intent.entityId = inReplyTo.entityId
       }
     } 
     if (intent.entityType in ENTITIES_METADATA) {
@@ -53,3 +69,31 @@ exports.detectIntent = (message) => {
     return intent
   }
   
+
+
+  exports.isPositive = (text) => {
+    const positiveWords = ['yes', 'true', 'confirm', 'positive', 'correct', 'right', 'sure']
+    return tokenExists(text, positiveWords)
+  }
+
+  exports.isNegative = (text) => {
+    // TODO use classifier
+    const negativeWords = ['no', 'false', 'negative', 'not', "isn't"]
+    return tokenExists(text, negativeWords)
+  }
+
+  const tokenExists = (text, tokens) => {
+      // TODO use classifier
+      const panctuations = [',', '.', '!', '-', '(', ')']
+      text = text.toLowerCase()
+      panctuations.forEach(p => { text = text.replace(p, '')})
+      const parts = text.split(' ')
+      // TODO refactor
+      let tokenFound = false
+      tokens.forEach(w => {
+        if (parts.indexOf(w) >= 0) {
+          tokenFound = true
+        }
+      })
+      return tokenFound
+  }

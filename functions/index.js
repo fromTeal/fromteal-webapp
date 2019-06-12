@@ -127,7 +127,9 @@ const createEntityRecord = (intent, teamId, triggeringMessageId) => {
 const notifyOnEntityChange = (intent, teamId) => {
     const text = `${intent.entityType} ${intent.entityId} ${intent.toStatus}`
     console.log(text)
-    return sendMessageBackToUser(text, "notify", intent.entityType, "text-message", teamId)
+    return sendMessageBackToUser(text, 
+        "notify", intent.entityType, 
+        intent.entityId, "text-message", teamId)
 }
 
 const updateEntity = async (intent, teamId, triggeringMessageId) => {
@@ -169,7 +171,9 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
             token = ", "
         })
         console.log(entities)
-        return sendMessageBackToUser(text, "answer", intent.entityType, "text-message", teamId)
+        return sendMessageBackToUser(text, 
+            "answer", intent.entityType, null, 
+            "text-message", teamId)
     }).catch(err => {
         console.log('Error getting list of entities', err);
     });
@@ -177,11 +181,12 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
 }
 
 
-const sendMessageBackToUser = (text, speechAct, entityType, type, teamId) => {
+const sendMessageBackToUser = (text, speechAct, entityType, entityId, type, teamId) => {
     let ref = db.collection(`messages/simple/${teamId}`)
     return ref.add({
         speechAct: speechAct,
         entityType: entityType,
+        entityId: entityId,
         teamId: teamId,
         type: type,
         text: text,
@@ -202,8 +207,18 @@ const publishEvent = async (topicName, data) => {
 
 
 exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
-    .onPublish((message) => {
-    // TODO implement (e.g., send email when adding member)
+    .onPublish(async (message) => {
+    // if a purpose is suggested in a personal team, we want to ask for confirmation 
+    // - only on confirmation we would start the search for matching teams
+    if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
+        const team = await fetchTeam(message.teamId)
+        if (team.teamType === 'person') {
+            const text = `Please confirm this is what you really love to work on: ${message.text}`
+            return sendMessageBackToUser(text, 
+                'confirm', 'purpose', message.entityId, 
+                'text-message', message.teamId)
+        }
+    }
   });
 
 
@@ -328,7 +343,8 @@ exports.firstSignIn = functions.https.onRequest(async (req, res) => {
             console.log(`Published event for user ${user.email} 1st sign-in: ${eventId}`)
             // send a welcome message
             const welcomeText = `Welcome to fromTeal, ${user.name}!`
-            const greetMsg = await sendMessageBackToUser(welcomeText, "greet", null, "text-message", user.teamId)
+            const greetMsg = await sendMessageBackToUser(welcomeText, 
+                "greet", null, null, "text-message", user.teamId)
             return res.send(user)
         } catch (err) {
             res.status(500).send(err)
@@ -338,15 +354,31 @@ exports.firstSignIn = functions.https.onRequest(async (req, res) => {
 
 
 
-exports.handleEntityUpdatedEvent = functions.pubsub.topic('user_ready_for_onboard')
+exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard')
     .onPublish((message) => {
     const user = message.json
 
     // ask the user about her purpose
     const purposeAskText = "To continue, please tell us what would you really love to work on? The thing you would work on if you didn't have to work at all.. "
-    return sendMessageBackToUser(text, "ask", "purpose", "text-message", user.teamId)
+    return sendMessageBackToUser(text, "ask", "purpose", null, "text-message", user.teamId)
 })
 
+
+//
+//  Data access (TODO move)
+//
+
+const fetchTeam = async (teamId) => {
+    const ref = db.collection('teams')
+    return ref.doc(teamId).get()
+}
+
+
+
+
+//
+//  Utilities (TODO move)
+//
 
 const getRandomEmoji = () => {
     // TODO implement
