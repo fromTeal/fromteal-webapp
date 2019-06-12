@@ -12,18 +12,20 @@ exports.detectIntent = (message) => {
   
     if ('entityId' in message) {
       intent.entityId = message.entityId
+    } else if ('inReplyTo' in message && 'entityId' in message.inReplyTo) {
+      intent.entityId = message.inReplyTo.entityId
     }
     if ('entityType' in message) {
       intent.entityType = message.entityType
+    } else if ('inReplyTo' in message && 'entityType' in message.inReplyTo) {
+      intent.entityType = message.inReplyTo.entityType
     }
     if ('speechAct' in message) {
       intent.speechAct = message.speechAct
-    }
-    else if ('inReplyTo' in message) {
-      // if no speech-act, but this is a reply, infer speechAct & entityType from the message being replied
-      const inReplyTo = message.inReplyTo
+    } else if ('inReplyTo' in message && 'speechAct' in message.inReplyTo) {
+      // if no speech-act, but this is a reply, infer speechAct from the message being replied
       // TODO use dialogues metadata
-      switch (inReplyTo.speechAct) {
+      switch (message.inReplyTo.speechAct) {
         case 'ask':
             intent.speechAct = 'suggest'
             break
@@ -35,12 +37,6 @@ exports.detectIntent = (message) => {
               intent.speechAct = 'decline'
             }
             break
-      }
-      if (!('entityType' in intent) && 'entityType' in inReplyTo) {
-        intent.entityType = inReplyTo.entityType
-      }
-      if (!('entityId' in intent) && 'entityId' in inReplyTo) {
-        intent.entityId = inReplyTo.entityId
       }
     } 
     if (intent.entityType in ENTITIES_METADATA) {
