@@ -95,6 +95,10 @@ async function messageHandler(snap, context) {
 
 const createEntity = async (intent, teamId, triggeringMessageId) => {
     try {
+        // if no entity-id given, generate random one
+        if (!('entityId' in intent)) {
+            intent.entityId = getRandomEmoji()
+        }
         const snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
         intent.teamId = teamId
         const messageId = await publishEvent("entity_created", intent)
@@ -343,3 +347,20 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('user_ready_for_onboar
     return sendMessageBackToUser(text, "ask", "purpose", "text-message", user.teamId)
 })
 
+
+const getRandomEmoji = () => {
+    // TODO implement
+    const emojies = [
+        '😃',
+        '🐻',
+        '🍔',
+        '⚽',
+        '🌇',
+        '💡',
+        '🔣',
+        '🎌',
+        '🔥'
+    ]
+    const choice = Math.round(Math.random() * (emojies.length - 1))
+    return emojies[choice]
+}
