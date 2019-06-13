@@ -4,6 +4,7 @@ const {PubSub} = require('@google-cloud/pubsub');
 const cors = require('cors')({
     origin: true,
 })
+const TfIdf = require('node-tfidf')
 const conversation = require('./conversation')
 const {ENTITIES_METADATA} = require('./entities')
 
@@ -12,6 +13,7 @@ const FROMTEAL_AVATAR = "http://fromTeal.app/static/media/logo.44c521dc.png"
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT
 
+const TFIDF_THRESHOLD = 0
 
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
@@ -274,10 +276,11 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
             if (isArrayAttribute) {
                 attributeName = `${attributeName}s`
             }
+            const addToArray = isArrayAttribute
             const team = await updateTeamAttribute(event.teamId, 
                 attributeName, 
                 attributeValue, 
-                isArrayAttribute)
+                addToArray)
             console.log(`Team ${event.teamId} attribute ${attributeName} updated.`)
         }
     }
@@ -307,13 +310,13 @@ const updateEntityStatus = async (entityId, entityType, entity, toStatus) => {
         .set(entity)
 }
 
-const updateTeamAttribute = async (teamId, attributeName, attributeValue, isArrayAttribute) => {
+const updateTeamAttribute = async (teamId, attributeName, attributeValue, addToArray) => {
     console.log(`Updating ${teamId}: setting ${attributeName} to ${attributeValue}`)
     const ref = db.collection('teams')
     const team = await ref.doc(teamId).get()
     const teamData = team.data()
     console.log(teamData)
-    if (isArrayAttribute) {
+    if (addToArray) {
         if (!(attributeValue in teamData[attributeName])) {
             teamData[attributeName].push(attributeValue)
         }
@@ -380,6 +383,50 @@ exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard'
 
 
 
+exports.teamAutoTaggingJob = functions.pubsub.schedule('every 1 hour')
+    .onRun(async (context) => {
+    console.log('Team auto-tagging job started')
+    // TODO read in pages, otherwise we'll exceed the function timeout
+    console.log("Fetching purpose text from all teams")
+    const teams = await fetchAllTeams()
+    const purposes = []
+    teams.forEach(team => {
+        purposes.push({
+            teamId: team.id,
+            purposeTokens = cleanPurpose(team.purpose)
+        })
+    })
+    return publishEvent('team_auto_tagging_requested', team)
+})
+
+
+exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_requested')
+    .onPublish(async (message) => {
+    console.log("Auto-tagging teams")
+    const teams = message.json
+    // calculate TF/IDF for all teams' purposes 
+    const tfidf = new TfIdf()
+    teams.forEach(team => {
+        tfidf.addDocument(team.purpose, team.teamId)
+    })
+    tfidf.documents.forEach((d, i) => {
+        const teamId = d['__key']
+        const teamAutoTags = []  
+        for (const key in d) {
+            if (key != '__key') {
+                if (d[key] > TFIDF_THRESHOLD) {
+                    teamAutoTags.push(key)
+                }
+            }
+        }
+        // TODO if faster, send pubsub event to trigger the team update async
+        const updateRef = await updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false) 
+    })
+    console.log(`${tfidf.documents.length} teams updated with auto-tags`)
+})
+
+
+
 const searchForMatchingTeams = (purpose, exceludeTeamId) => {
     // TODO implement
 
@@ -400,7 +447,10 @@ const fetchTeam = async (teamId) => {
     return ref.doc(teamId).get()
 }
 
-
+const fetchAllTeams = async () => {
+    const ref = db.collection('teams')
+    return ref.get()
+}
 
 
 //
@@ -422,4 +472,23 @@ const getRandomEmoji = () => {
     ]
     const choice = Math.round(Math.random() * (emojies.length - 1))
     return emojies[choice]
+}
+
+const cleanPurpose = (text) => {
+    // TODO library for text processing
+    const panctuations = [',', '.', '!', '-', '(', ')', "'", '"']
+    const commonPurposeWords = [
+        'help', 'offer', 'deliver', 'happy', 'awesome', 'people', 'save',
+        'stop', 'perfect', 'happier', 'change', 'easier', 'faster', 'improve'
+    ]
+    text = text.toLowerCase()
+    text = removeTokens(text, panctuations)
+    //text = removeTokens(text, stopwords_en)   // the node-tfidf already does it
+    text = removeTokens(text, commonPurposeWords)
+    return text
+}
+
+const removeTokens = (text, tokens) => {
+    tokens.forEach(t => { text = text.replace(t, '')})
+    return text
 }
