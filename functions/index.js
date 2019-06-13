@@ -274,11 +274,26 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
             if (isArrayAttribute) {
                 attributeName = `${attributeName}s`
             }
-            return updateTeamAttribute(event.teamId, 
+            const team = await updateTeamAttribute(event.teamId, 
                 attributeName, 
                 attributeValue, 
                 isArrayAttribute)
+            console.log(`Team ${event.teamId} attribute ${attributeName} updated.`)
         }
+    }
+    // if the approved entity is of type purpose & it is a person-team, 
+    // - perform a search for matching teams & send results back to user
+    if (event.entityType === 'purpose') {
+        const team = await fetchTeam(event.teamId)
+        if (team.teamType === 'person') {
+            // TODO perform search for matching teams
+            const matchingTeams = searchForMatchingTeams(event.text, teamId)
+            const resultText = `Found ${matchingTeams.length} teams matching your purpose: ${matchingTeams}`
+            const resultMessageId = await sendMessageBackToUser(resultText, 
+                        "match", "team", null, "list-message", teamId)
+
+        }
+
     }
 })
 
@@ -362,6 +377,18 @@ exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard'
     const purposeAskText = "To continue, please tell us what would you really love to work on? The thing you would work on if you didn't have to work at all.. "
     return sendMessageBackToUser(text, "ask", "purpose", null, "text-message", user.teamId)
 })
+
+
+
+const searchForMatchingTeams = (purpose, exceludeTeamId) => {
+    // TODO implement
+
+    // clean & tokenize purpose text
+
+    // for each token, search any team with this token as tag/auto-assigned-tag
+
+    // return the set of resulting teams, sorted by the number of tokens matched
+}
 
 
 //
