@@ -5,6 +5,7 @@ const cors = require('cors')({
     origin: true,
 })
 const TfIdf = require('node-tfidf')
+const emoji = require('node-emoji')
 const conversation = require('./conversation')
 const {ENTITIES_METADATA} = require('./entities')
 
@@ -459,19 +460,9 @@ const fetchAllTeams = async () => {
 
 const getRandomEmoji = () => {
     // TODO implement
-    const emojies = [
-        '😃',
-        '🐻',
-        '🍔',
-        '⚽',
-        '🌇',
-        '💡',
-        '🔣',
-        '🎌',
-        '🔥'
-    ]
-    const choice = Math.round(Math.random() * (emojies.length - 1))
-    return emojies[choice]
+    const randomEmoji = emoji.random()
+    console.log(`Generated random emoji: ${randomEmoji.key} - ${randomEmoji.emoji}`)
+    return randomEmoji.emoji
 }
 
 const cleanPurpose = (text) => {
