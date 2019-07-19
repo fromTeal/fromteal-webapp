@@ -291,7 +291,7 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
         const team = await fetchTeam(event.teamId)
         if (team.teamType === 'person') {
             // TODO perform search for matching teams
-            const matchingTeams = searchForMatchingTeams(event.text, teamId)
+            const matchingTeams = await searchForMatchingTeams(event.text, teamId)
             const resultText = `Found ${matchingTeams.length} teams matching your purpose: ${matchingTeams}`
             const resultMessageId = await sendMessageBackToUser(resultText, 
                         "match", "team", null, "list-message", teamId)
@@ -384,7 +384,7 @@ exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard'
 
 
 
-exports.teamAutoTaggingJob = functions.pubsub.schedule('every 1 hour')
+exports.teamAutoTaggingJob = functions.pubsub.schedule('every 6 hour')
     .onRun(async (context) => {
     console.log('Team auto-tagging job started')
     // TODO read in pages, otherwise we'll exceed the function timeout
@@ -394,21 +394,22 @@ exports.teamAutoTaggingJob = functions.pubsub.schedule('every 1 hour')
     teams.forEach(team => {
         purposes.push({
             teamId: team.id,
-            purposeTokens = cleanPurpose(team.purpose)
+            purposeTokens: cleanPurpose(team.purpose)
         })
     })
-    return publishEvent('team_auto_tagging_requested', team)
+    return publishEvent('team_auto_tagging_requested', purposes)
 })
 
 
 exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_requested')
-    .onPublish(async (message) => {
+    .onPublish((message) => {
     console.log("Auto-tagging teams")
     const teams = message.json
+    const updates = []
     // calculate TF/IDF for all teams' purposes 
     const tfidf = new TfIdf()
     teams.forEach(team => {
-        tfidf.addDocument(team.purpose, team.teamId)
+        tfidf.addDocument(team.purposeTokens, team.teamId)
     })
     tfidf.documents.forEach((d, i) => {
         const teamId = d['__key']
@@ -421,21 +422,29 @@ exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_reques
             }
         }
         // TODO if faster, send pubsub event to trigger the team update async
-        const updateRef = await updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false) 
+        updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false)) 
     })
-    console.log(`${tfidf.documents.length} teams updated with auto-tags`)
+    console.log(`${tfidf.documents.length} teams to be updated with auto-tags`)
+    return updates
 })
 
 
 
-const searchForMatchingTeams = (purpose, exceludeTeamId) => {
-    // TODO implement
-
+const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
     // clean & tokenize purpose text
-
+    const tokens = cleanPurpose(purpose)
+    let allMatches = []
     // for each token, search any team with this token as tag/auto-assigned-tag
-
+    tokens.forEach(async w => {
+        const tagMatches = await searchTeamsByArrayAttributeValue("tags", w)
+        allMatches.push(...tagMatches)
+        const autoTagMatches = await searchTeamsByArrayAttributeValue("autoTags", w)
+        allMatches.push(...autoTagMatches)
+    })
     // return the set of resulting teams, sorted by the number of tokens matched
+    const frequencyCounts = countFrequency(allMatches)
+    const matches = keysSortedByValues(frequencyCounts)
+    return matches.reverse()
 }
 
 
@@ -453,10 +462,17 @@ const fetchAllTeams = async () => {
     return ref.get()
 }
 
+const searchTeamsByArrayAttributeValue = async (arrayField, value) => {
+    const ref = db.collection('teams')
+    return ref.where(arrayField, "array-contains", value).get()
+}
 
 //
 //  Utilities (TODO move)
 //
+
+
+// emoji
 
 const getRandomEmoji = () => {
     // TODO implement
@@ -465,12 +481,16 @@ const getRandomEmoji = () => {
     return randomEmoji.emoji
 }
 
+
+// nlp
+
 const cleanPurpose = (text) => {
     // TODO library for text processing
     const panctuations = [',', '.', '!', '-', '(', ')', "'", '"']
     const commonPurposeWords = [
         'help', 'offer', 'deliver', 'happy', 'awesome', 'people', 'save',
-        'stop', 'perfect', 'happier', 'change', 'easier', 'faster', 'improve'
+        'stop', 'perfect', 'happier', 'change', 'easier', 'faster', 'improve',
+        'evolve', 'humanity'
     ]
     text = text.toLowerCase()
     text = removeTokens(text, panctuations)
@@ -482,4 +502,25 @@ const cleanPurpose = (text) => {
 const removeTokens = (text, tokens) => {
     tokens.forEach(t => { text = text.replace(t, '')})
     return text
+}
+
+
+// data processing
+
+exports.countFrequency = (arr) => {
+    // return object with the number of occurrences of each item in the given array
+    let counts = {};
+
+    for (let i = 0; i < arr.length; i++) {
+      let num = arr[i];
+      counts[num] = counts[num] ? counts[num] + 1 : 1;
+    }
+    return counts
+}
+
+exports.keysSortedByValues = (obj) => {
+    // return the keys of a given object, sorted by their corresponding values
+    const pairs = Object.keys(obj).map(k => [k, obj[k]])
+    pairs.sort((a, b) => (a[1] > b[1]) ? 1 : -1)
+    return pairs.map(pair => pair[0])
 }
