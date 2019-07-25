@@ -292,10 +292,18 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
         if (team.teamType === 'person') {
             // TODO perform search for matching teams
             const matchingTeams = await searchForMatchingTeams(event.text, teamId)
-            const resultText = `Found ${matchingTeams.length} teams matching your purpose: ${matchingTeams}`
-            const resultMessageId = await sendMessageBackToUser(resultText, 
-                        "match", "team", null, "list-message", teamId)
-
+            if (matchingTeams.length > 0) {
+                let notifyText = `Found ${matchingTeams.length} teams matching your purpose`
+                let resultMessageId = await sendMessageBackToUser(notifyText, 
+                    "notify", null, null, "text-message", teamId)
+                resultMessageId = await sendMessageBackToUser(JSON.stringify(matchingTeams), 
+                    "match", "team", null, "list-message", teamId)
+            }
+            else {
+                notifyText = "Couldn't find teams matching your purpose (we'll send here matches if we find some later)"
+                resultMessageId = await sendMessageBackToUser(notifyText, 
+                    "notify", null, null, "text-message", teamId)
+            }
         }
 
     }
