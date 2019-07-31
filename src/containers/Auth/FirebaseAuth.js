@@ -9,7 +9,7 @@ import AuthContext from '../auth-context'
 
 
 const FIRST_SIGN_IN_ENDPOINT = "https://us-central1-manual-pilot.cloudfunctions.net/firstSignIn"
-// const TEAMS_ENDPOINT = "http://localhost:5000/manual-pilot/us-central1/firstSignIn"
+// const FIRST_SIGN_IN_ENDPOINT = "http://localhost:5000/manual-pilot/us-central1/firstSignIn"
 // console.log("ERRRRRRRROOOORRRRRRRR: USING LOCAL ENDPOINTS!!!!!!")
 
 
@@ -41,7 +41,16 @@ class FirebaseAuth extends Component {
   }
 
   isFirstSignIn = (user) => {
-    return (user.metadata.creationTime == user.metadata.lastSignInTime)
+    //return (user.metadata.creationTime == user.metadata.lastSignInTime)
+    console.log("ERRRRRROOORRRR: IS FIRST SIGN IN MOCKED !!!!!!!!!!!")
+    return true
+    // TODO REVERT
+    // TODO REVERT
+    // TODO REVERT
+    // TODO REVERT
+    // TODO REVERT
+    // TODO REVERT
+    // TODO REVERT
   }
 
   handleFirstSignIn = (user) => {
@@ -54,8 +63,7 @@ class FirebaseAuth extends Component {
             // extract the name of the personal-team created
             // TODO verify
             const personalTeamName = response.data.personalTeamName 
-            // redirect to the user's personal team page
-            this.props.history.push( `/my_teams/${personalTeamName}` );
+            // TODO redirect to the user's personal team page
           })
     })
   }

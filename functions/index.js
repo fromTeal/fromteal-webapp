@@ -4,6 +4,7 @@ const {PubSub} = require('@google-cloud/pubsub');
 const cors = require('cors')({
     origin: true,
 })
+const _ = require('lodash')
 const TfIdf = require('node-tfidf')
 const emoji = require('node-emoji')
 const conversation = require('./conversation')
@@ -185,6 +186,7 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
 
 
 const sendMessageBackToUser = (text, speechAct, entityType, entityId, type, teamId) => {
+    console.log(`Creating message in team ${teamId}`)
     let ref = db.collection(`messages/simple/${teamId}`)
     return ref.add({
         speechAct: speechAct,
@@ -352,10 +354,14 @@ const createPersonalTeam = async (user) => {
         name: teamName,
         teamType: 'person',
         createdBy: user.email,
-        createdAt: new Date()
+        createdAt: new Date(),
+        tags: [],
+        members: [
+            user.email
+        ]
     })
     user.teamName = teamName
-    user.teamId = newTeam.id
+    user.teamId = teamName
     return user
 }
 
@@ -364,8 +370,10 @@ exports.firstSignIn = functions.https.onRequest(async (req, res) => {
         try {
             const idToken = req.header('me')
             let user = await verifyUser(idToken)
+            console.log(user)
             console.log(`Handling 1st-sign-in of ${user.email}`)
             user = await createPersonalTeam(user)
+            console.log(user)
             const eventId = await publishEvent("user_ready_for_onboard", user)
             console.log(`Published event for user ${user.email} 1st sign-in: ${eventId}`)
             // send a welcome message
@@ -394,7 +402,13 @@ exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard'
 
 exports.teamAutoTaggingJob = functions.pubsub.schedule('every 6 hour')
     .onRun(async (context) => {
-    console.log('Team auto-tagging job started')
+    console.log('Team auto-tagging job invoked')
+    return publishEvent('team_auto_tagging_requested', "start")
+})
+
+exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_requested')
+    .onPublish(async (message) => {
+    console.log(`Team auto-tagging job requested ${message}`)
     // TODO read in pages, otherwise we'll exceed the function timeout
     console.log("Fetching purpose text from all teams")
     const teams = await fetchAllTeams()
@@ -402,35 +416,49 @@ exports.teamAutoTaggingJob = functions.pubsub.schedule('every 6 hour')
     teams.forEach(team => {
         purposes.push({
             teamId: team.id,
-            purposeTokens: cleanPurpose(team.purpose)
+            purposeTokens: cleanPurpose(team.purpose),
+            tags: team.tags,
+            allTags: _.get(team, 'team.allTags', [])
         })
     })
-    return publishEvent('team_auto_tagging_requested', purposes)
+    return publishEvent('team_auto_tagging_processing', purposes)
 })
 
-
-exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_requested')
+exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_processing')
     .onPublish((message) => {
     console.log("Auto-tagging teams")
     const teams = message.json
     const updates = []
     // calculate TF/IDF for all teams' purposes 
     const tfidf = new TfIdf()
+    const tagsById = {}
+    const allTagsById = {}
     teams.forEach(team => {
         tfidf.addDocument(team.purposeTokens, team.teamId)
+        tagsById[team.teamId] = team.tags
+        allTagsById[team.teamId] = team.allTags
     })
     tfidf.documents.forEach((d, i) => {
         const teamId = d['__key']
         const teamAutoTags = []  
         for (const key in d) {
-            if (key != '__key') {
+            if (key !== '__key') {
                 if (d[key] > TFIDF_THRESHOLD) {
                     teamAutoTags.push(key)
                 }
             }
         }
-        // TODO if faster, send pubsub event to trigger the team update async
+        const existingTags = tagsById[teamId]
+        const existingAllTags = allTagsById[teamId]
+        const allTags = _.union(existingTags, teamAutoTags)
+        if (!_.isEqual(allTags, existingAllTags)) {
+            console.log(`Updating allTags for team ${teamId}: ${allTags}`)
+            // TODO if faster, send pubsub event to trigger the team update async
+            updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false))
         updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false)) 
+            updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false))
+            updates.push(updateTeamAttribute(teamId, 'allTags', allTags, false))
+        }
     })
     console.log(`${tfidf.documents.length} teams to be updated with auto-tags`)
     return updates
@@ -444,10 +472,8 @@ const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
     let allMatches = []
     // for each token, search any team with this token as tag/auto-assigned-tag
     tokens.forEach(async w => {
-        const tagMatches = await searchTeamsByArrayAttributeValue("tags", w)
+        const tagMatches = await searchTeamsByArrayAttributeValue("allTags", w)
         allMatches.push(...tagMatches)
-        const autoTagMatches = await searchTeamsByArrayAttributeValue("autoTags", w)
-        allMatches.push(...autoTagMatches)
     })
     // return the set of resulting teams, sorted by the number of tokens matched
     const frequencyCounts = countFrequency(allMatches)
