@@ -41,9 +41,9 @@ class FirebaseAuth extends Component {
   }
 
   isFirstSignIn = (user) => {
-    //return (user.metadata.creationTime == user.metadata.lastSignInTime)
-    console.log("ERRRRRROOORRRR: IS FIRST SIGN IN MOCKED !!!!!!!!!!!")
-    return true
+    return (user.metadata.creationTime == user.metadata.lastSignInTime)
+    // console.log("ERRRRRROOORRRR: IS FIRST SIGN IN MOCKED !!!!!!!!!!!")
+    // return true
     // TODO REVERT
     // TODO REVERT
     // TODO REVERT

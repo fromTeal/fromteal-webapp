@@ -401,24 +401,31 @@ exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard'
 
 
 exports.teamAutoTaggingJob = functions.pubsub.schedule('every 6 hour')
-    .onRun(async (context) => {
+    .onRun((context) => {
     console.log('Team auto-tagging job invoked')
     return publishEvent('team_auto_tagging_requested', "start")
 })
 
-exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_requested')
+exports.startTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_requested')
     .onPublish(async (message) => {
-    console.log(`Team auto-tagging job requested ${message}`)
+    console.log(`Team auto-tagging job requested ${JSON.stringify(message)}`)
     // TODO read in pages, otherwise we'll exceed the function timeout
     console.log("Fetching purpose text from all teams")
     const teams = await fetchAllTeams()
     const purposes = []
     teams.forEach(team => {
+        const teamId = team.id
+        const teamData = team.data()
+        console.log(JSON.stringify(teamData))
+        const p = _.get(teamData, 'purpose', "")
+        console.log(`Current purpose is: ${p}`)
+        const purposeTokens = cleanPurpose(p)
+        console.log(`Current purpose tokens: ${purposeTokens}`)
         purposes.push({
-            teamId: team.id,
-            purposeTokens: cleanPurpose(team.purpose),
-            tags: team.tags,
-            allTags: _.get(team, 'team.allTags', [])
+            teamId: teamId,
+            purposeTokens: purposeTokens,
+            tags: teamData.tags,
+            allTags: _.get(teamData, 'allTags', [])
         })
     })
     return publishEvent('team_auto_tagging_processing', purposes)
@@ -426,8 +433,9 @@ exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_reques
 
 exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_processing')
     .onPublish((message) => {
-    console.log("Auto-tagging teams")
     const teams = message.json
+    console.log(JSON.stringify(teams))
+    console.log(`Auto-tagging ${teams.length} teams `)
     const updates = []
     // calculate TF/IDF for all teams' purposes 
     const tfidf = new TfIdf()
@@ -437,13 +445,16 @@ exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_proces
         tfidf.addDocument(team.purposeTokens, team.teamId)
         tagsById[team.teamId] = team.tags
         allTagsById[team.teamId] = team.allTags
+        console.log(`Added document ${team.teamId} to TF/IDF model: ${team.purposeTokens}`)
     })
     tfidf.documents.forEach((d, i) => {
         const teamId = d['__key']
+        console.log(`Going over document ${teamId}`)
         const teamAutoTags = []  
         for (const key in d) {
             if (key !== '__key') {
                 if (d[key] > TFIDF_THRESHOLD) {
+                    console.log(`Found new auto-tag: ${key}`)
                     teamAutoTags.push(key)
                 }
             }
