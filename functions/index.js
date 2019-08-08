@@ -334,7 +334,7 @@ const updateTeamAttribute = async (teamId, attributeName, attributeValue, addToA
     } else {
         teamData[attributeName] = attributeValue
     }
-    console.log(`Updating to: ${teamData}`)
+    console.log(`Updating to: ${JSON.stringify(teamData)}`)
     return ref.doc(teamId).set(teamData)
 }
 
@@ -421,18 +421,20 @@ exports.startTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_request
         console.log(`Current purpose is: ${p}`)
         const purposeTokens = cleanPurpose(p)
         console.log(`Current purpose tokens: ${purposeTokens}`)
-        purposes.push({
-            teamId: teamId,
-            purposeTokens: purposeTokens,
-            tags: teamData.tags,
-            allTags: _.get(teamData, 'allTags', [])
-        })
+        if (purposeTokens !== "") {
+            purposes.push({
+                teamId: teamId,
+                purposeTokens: purposeTokens,
+                tags: teamData.tags,
+                allTags: _.get(teamData, 'allTags', [])
+            })
+        }
     })
     return publishEvent('team_auto_tagging_processing', purposes)
 })
 
 exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_processing')
-    .onPublish((message) => {
+    .onPublish(async (message) => {
     const teams = message.json
     console.log(JSON.stringify(teams))
     console.log(`Auto-tagging ${teams.length} teams `)
@@ -465,14 +467,12 @@ exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_proces
         if (!_.isEqual(allTags, existingAllTags)) {
             console.log(`Updating allTags for team ${teamId}: ${allTags}`)
             // TODO if faster, send pubsub event to trigger the team update async
-            updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false))
-        updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false)) 
-            updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false))
+            //updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false))
             updates.push(updateTeamAttribute(teamId, 'allTags', allTags, false))
         }
     })
-    console.log(`${tfidf.documents.length} teams to be updated with auto-tags`)
-    return updates
+    console.log(`${tfidf.documents.length} teams to be updated with auto-tags (${updates.length} updates)`)
+    return Promise.all(updates)
 })
 
 
@@ -531,11 +531,11 @@ const getRandomEmoji = () => {
 
 const cleanPurpose = (text) => {
     // TODO library for text processing
-    const panctuations = [',', '.', '!', '-', '(', ')', "'", '"']
+    const panctuations = [',', '.', '!', '-', '(', ')', "'", '"', "&"]
     const commonPurposeWords = [
         'help', 'offer', 'deliver', 'happy', 'awesome', 'people', 'save',
         'stop', 'perfect', 'happier', 'change', 'easier', 'faster', 'improve',
-        'evolve', 'humanity'
+        'evolve', 'humanity', 'to', 'you'
     ]
     text = text.toLowerCase()
     text = removeTokens(text, panctuations)
