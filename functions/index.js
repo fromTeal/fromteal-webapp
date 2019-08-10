@@ -78,12 +78,14 @@ exports.handleMessage = functions.firestore.document('/messages/simple/{teamId}/
 
 
 async function messageHandler(snap, context) {
-    console.log("Yay, invoked")
     const message = snap.data()
+    console.log(`Yay, invoked: '${JSON.stringify(message)}'`)
     const triggeringMessageId = context.params.documentId
 
     const teamId = context.params.teamId
     const msgIntent = conversation.detectIntent(message)
+
+    console.log(`Message basic intent: ${msgIntent.basicIntent}`)
 
     switch (msgIntent.basicIntent) {
       case 'create':
@@ -100,8 +102,12 @@ async function messageHandler(snap, context) {
 const createEntity = async (intent, teamId, triggeringMessageId) => {
     try {
         // if no entity-id given, generate random one
-        if (!('entityId' in intent)) {
+        if (_.get(intent, 'entityId', '') === '') {
             intent.entityId = getRandomEmoji()
+            console.log(`No entityId given - generating random emoji: ${intent.entityId}`)
+        }
+        else {
+            console.log(`entityId provided: ${intent.entityId}`)
         }
         const snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
         intent.teamId = teamId
@@ -374,7 +380,8 @@ exports.firstSignIn = functions.https.onRequest(async (req, res) => {
             console.log(`Handling 1st-sign-in of ${user.email}`)
             user = await createPersonalTeam(user)
             console.log(user)
-            const eventId = await publishEvent("user_ready_for_onboard", user)
+            const params = {teamId: user.teamId}
+            const eventId = await publishEvent("user_ready_for_onboard", params)
             console.log(`Published event for user ${user.email} 1st sign-in: ${eventId}`)
             // send a welcome message
             const welcomeText = `Welcome to fromTeal, ${user.name}!`
@@ -391,11 +398,11 @@ exports.firstSignIn = functions.https.onRequest(async (req, res) => {
 
 exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard')
     .onPublish((message) => {
-    const user = message.json
+    const params = message.json
 
     // ask the user about her purpose
     const purposeAskText = "To continue, please tell us what would you really love to work on? The thing you would work on if you didn't have to work at all.. "
-    return sendMessageBackToUser(text, "ask", "purpose", null, "text-message", user.teamId)
+    return sendMessageBackToUser(purposeAskText, "ask", "purpose", null, "text-message", params.teamId)
 })
 
 
