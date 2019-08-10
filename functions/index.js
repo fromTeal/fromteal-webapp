@@ -221,9 +221,14 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     .onPublish(async (message) => {
     // if a purpose is suggested in a personal team, we want to ask for confirmation 
     // - only on confirmation we would start the search for matching teams
+    message = message.json
+    console.log(message)
     if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
+        console.log(`Handling purpose creation for team: ${message.teamId}`)
         const team = await fetchTeam(message.teamId)
-        if (team.teamType === 'person') {
+        const teamData = team.data()
+        console.log(teamData)
+        if (teamData.teamType === 'person') {
             const text = `Please confirm this is what you really love to work on: ${message.text}`
             return sendMessageBackToUser(text, 
                 'confirm', 'purpose', message.entityId, 
