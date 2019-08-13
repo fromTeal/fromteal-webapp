@@ -1,4 +1,6 @@
 const {ENTITIES_METADATA} = require('./entities')
+const _ = require('lodash')
+const textUtils = require('./text_utils')
 
 
 exports.detectIntent = (message) => {
@@ -12,7 +14,7 @@ exports.detectIntent = (message) => {
   
     if ('entityId' in message) {
       intent.entityId = message.entityId
-    } else if ('inReplyTo' in message && 'entityId' in message.inReplyTo) {
+    } else if (_.get(message, 'inReplyTo.entityId', null) !== null) {
       intent.entityId = message.inReplyTo.entityId
     }
     if ('entityType' in message) {
@@ -30,10 +32,10 @@ exports.detectIntent = (message) => {
             intent.speechAct = 'suggest'
             break
         case 'confirm':
-            if (isPositive(inReplyTo.text)) {
+            if (textUtils.isPositive(message.inReplyTo.text)) {
               intent.speechAct = 'approve'
             }
-            else if (isNegative(inReplyTo.text)) {
+            else if (textUtils.isNegative(message.inReplyTo.text)) {
               intent.speechAct = 'decline'
             }
             break
@@ -66,30 +68,3 @@ exports.detectIntent = (message) => {
   }
   
 
-
-  exports.isPositive = (text) => {
-    const positiveWords = ['yes', 'true', 'confirm', 'positive', 'correct', 'right', 'sure']
-    return tokenExists(text, positiveWords)
-  }
-
-  exports.isNegative = (text) => {
-    // TODO use classifier
-    const negativeWords = ['no', 'false', 'negative', 'not', "isn't"]
-    return tokenExists(text, negativeWords)
-  }
-
-  const tokenExists = (text, tokens) => {
-      // TODO use classifier
-      const panctuations = [',', '.', '!', '-', '(', ')']
-      text = text.toLowerCase()
-      panctuations.forEach(p => { text = text.replace(p, '')})
-      const parts = text.split(' ')
-      // TODO refactor
-      let tokenFound = false
-      tokens.forEach(w => {
-        if (parts.indexOf(w) >= 0) {
-          tokenFound = true
-        }
-      })
-      return tokenFound
-  }

@@ -85,15 +85,22 @@ class TeamChannel extends Component {
   addMessage = (speechAct, entityType, entityId, text, teamId) => {
     const newMessage = {
       type: "text-message",
-      speechAct: speechAct,
-      entityType: entityType,
-      entityId: entityId,
       text: text,
       user: this.context.user.email,
       userName: this.context.user.name,
       userPicture: this.context.user.picture,
       created: new Date()
     }
+    if (speechAct !== "") {
+      newMessage.speechAct = speechAct
+    }
+    if (entityType !== "") {
+      newMessage.entityType = entityType
+    }
+    if (entityId !== "") {
+      newMessage.entityId = entityId
+    }
+
     // check if the previous message was a question 
     // - if it is, we can assume this message is an answer & mark it as a reply to the previous message
     if (this.state.lastMessage && 
