@@ -9,6 +9,7 @@ const TfIdf = require('node-tfidf')
 const emoji = require('node-emoji')
 const conversation = require('./conversation')
 const {ENTITIES_METADATA} = require('./entities')
+const textUtils = require('./text_utils')
 
 
 const FROMTEAL_AVATAR = "http://fromTeal.app/static/media/logo.44c521dc.png"
@@ -226,9 +227,8 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
         console.log(`Handling purpose creation for team: ${message.teamId}`)
         const team = await fetchTeam(message.teamId)
-        const teamData = team.data()
-        console.log(teamData)
-        if (teamData.teamType === 'person') {
+        console.log(team)
+        if (team.teamType === 'person') {
             const text = `Please confirm this is what you really love to work on: ${message.text}`
             return sendMessageBackToUser(text, 
                 'confirm', 'purpose', message.entityId, 
@@ -300,22 +300,25 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
     }
     // if the approved entity is of type purpose & it is a person-team, 
     // - perform a search for matching teams & send results back to user
+    console.log("About to check if this is an approved purpose")
     if (event.entityType === 'purpose') {
         const team = await fetchTeam(event.teamId)
+        console.log(`fetched team: ${JSON.stringify(team)}`)
         if (team.teamType === 'person') {
+            console.log("Starting search")
             // TODO perform search for matching teams
-            const matchingTeams = await searchForMatchingTeams(event.text, teamId)
+            const matchingTeams = await searchForMatchingTeams(team.purpose, event.teamId)
             if (matchingTeams.length > 0) {
                 let notifyText = `Found ${matchingTeams.length} teams matching your purpose`
                 let resultMessageId = await sendMessageBackToUser(notifyText, 
-                    "notify", null, null, "text-message", teamId)
+                    "notify", null, null, "text-message", event.teamId)
                 resultMessageId = await sendMessageBackToUser(JSON.stringify(matchingTeams), 
-                    "match", "team", null, "list-message", teamId)
+                    "match", "team", null, "list-message", event.teamId)
             }
             else {
                 notifyText = "Couldn't find teams matching your purpose (we'll send here matches if we find some later)"
                 resultMessageId = await sendMessageBackToUser(notifyText, 
-                    "notify", null, null, "text-message", teamId)
+                    "notify", null, null, "text-message", event.teamId)
             }
         }
 
@@ -494,13 +497,27 @@ const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
     const tokens = cleanPurpose(purpose)
     let allMatches = []
     // for each token, search any team with this token as tag/auto-assigned-tag
-    tokens.forEach(async w => {
-        const tagMatches = await searchTeamsByArrayAttributeValue("allTags", w)
-        allMatches.push(...tagMatches)
+    const queryResults = []
+    tokens.split(" ").forEach(async w => {
+        console.log(`Searching ${w}`)
+        queryResults.push(searchTeamsByArrayAttributeValue("allTags", w))
     })
+    const allResults = await Promise.all(queryResults)
+    allResults.forEach(result => {
+        if (!result.empty) {
+            const teams = []
+            result.forEach(t => {teams.push(t.data())})
+            if (teams) {
+                console.log(`Found ${JSON.stringify(teams)} matches`)
+                allMatches.push(...teams)
+            }
+        }
+    })
+    console.log(`In total, found ${allMatches.length} teams`)
     // return the set of resulting teams, sorted by the number of tokens matched
-    const frequencyCounts = countFrequency(allMatches)
-    const matches = keysSortedByValues(frequencyCounts)
+    const frequencyCounts = textUtils.countFrequency(allMatches)
+    console.log(`Frequency counts: ${JSON.stringify(frequencyCounts)}`)
+    const matches = textUtils.keysSortedByValues(frequencyCounts)
     return matches.reverse()
 }
 
@@ -511,7 +528,8 @@ const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
 
 const fetchTeam = async (teamId) => {
     const ref = db.collection('teams')
-    return ref.doc(teamId).get()
+    const team = await ref.doc(teamId).get()
+    return team.data()
 }
 
 const fetchAllTeams = async () => {
@@ -559,25 +577,4 @@ const cleanPurpose = (text) => {
 const removeTokens = (text, tokens) => {
     tokens.forEach(t => { text = text.replace(t, '')})
     return text
-}
-
-
-// data processing
-
-exports.countFrequency = (arr) => {
-    // return object with the number of occurrences of each item in the given array
-    let counts = {};
-
-    for (let i = 0; i < arr.length; i++) {
-      let num = arr[i];
-      counts[num] = counts[num] ? counts[num] + 1 : 1;
-    }
-    return counts
-}
-
-exports.keysSortedByValues = (obj) => {
-    // return the keys of a given object, sorted by their corresponding values
-    const pairs = Object.keys(obj).map(k => [k, obj[k]])
-    pairs.sort((a, b) => (a[1] > b[1]) ? 1 : -1)
-    return pairs.map(pair => pair[0])
 }
