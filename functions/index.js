@@ -309,11 +309,12 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
             // TODO perform search for matching teams
             const matchingTeams = await searchForMatchingTeams(team.purpose, event.teamId)
             if (matchingTeams.length > 0) {
-                let notifyText = `Found ${matchingTeams.length} teams matching your purpose`
+                const teamList = matchingTeams.map(teamId => `[show team ${teamId}]`)
+                let notifyText = `Found ${matchingTeams.length} teams matching your purpose: ${teamList.join(", ")}`
                 let resultMessageId = await sendMessageBackToUser(notifyText, 
                     "notify", null, null, "text-message", event.teamId)
-                resultMessageId = await sendMessageBackToUser(JSON.stringify(matchingTeams), 
-                    "match", "team", null, "list-message", event.teamId)
+                // resultMessageId = await sendMessageBackToUser(JSON.stringify(matchingTeams), 
+                //     "match", "team", null, "list-message", event.teamId)
             }
             else {
                 notifyText = "Couldn't find teams matching your purpose (we'll send here matches if we find some later)"
@@ -506,7 +507,7 @@ const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
     allResults.forEach(result => {
         if (!result.empty) {
             const teams = []
-            result.forEach(t => {teams.push(t.data())})
+            result.forEach(t => {teams.push(t.id)})
             if (teams) {
                 console.log(`Found ${JSON.stringify(teams)} matches`)
                 allMatches.push(...teams)
