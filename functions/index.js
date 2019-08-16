@@ -216,7 +216,7 @@ const showEntity = (intent, teamId, triggeringMessageId) => {
         _.forOwn(entityData, (value, key) => {
             const ignoreFields = ["id", "lastUpdateMessage", "teamId", "createMessage", "created", "updated"]
             if (ignoreFields.indexOf(key) < 0) {
-                text += `${token} [${key}] ${value}`
+                text += `${token} _${key}:_ ${value}`
                 token = ","
             }
         })

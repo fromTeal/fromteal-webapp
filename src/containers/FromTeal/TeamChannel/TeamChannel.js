@@ -119,8 +119,20 @@ class TeamChannel extends Component {
     });
   }
 
+  progSendMessage = (msg) => {
+    msg = msg.replace("[", "").replace("]", "")
+    const parts = msg.split(" ")
+    const speechAct = parts[0]
+    const entityType = parts[1]
+    let entityId = null
+    if (parts.length > 1) {
+      entityId = parts[2]
+    }
+    this.addMessage(speechAct, entityType, entityId, "", this.props.match.params.id)
+  }
+
   render() {
-    let chat = <Chat messages={this.state.messages}/>
+    let chat = <Chat messages={this.state.messages} progSendMessage={this.progSendMessage}/>
     if (this.state.loading) chat = <Spinner />
 
     return (
