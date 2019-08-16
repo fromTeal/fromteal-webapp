@@ -49,6 +49,11 @@ exports.detectIntent = (message) => {
         intent.basicIntent = "list"
         intent.validated = true
     }
+    // detect a show message
+    else if ('speechAct' in message && message.speechAct === "show") {
+      intent.basicIntent = "show"
+      intent.validated = true
+    }
     else if ('entityType' in intent && 'speechAct' in intent && intent.entityType in ENTITIES_METADATA) {
       const metadata = ENTITIES_METADATA[intent.entityType]
       if (intent.speechAct in metadata.transitions) {

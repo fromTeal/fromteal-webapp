@@ -19,6 +19,7 @@ class TeamChannel extends Component {
       "decline",
       "delete",
       "list",
+      "show",
       "invite",
       "add",
       // the following aren't supported yet
@@ -41,6 +42,7 @@ class TeamChannel extends Component {
       "tag",
       "tool",
       "member",
+      "team"
       // the following aren't supported yet
       // "product-concept",
       // "ux-spec",

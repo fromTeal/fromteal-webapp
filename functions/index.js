@@ -5,6 +5,7 @@ const cors = require('cors')({
     origin: true,
 })
 const _ = require('lodash')
+const moment = require('moment');
 const TfIdf = require('node-tfidf')
 const emoji = require('node-emoji')
 const conversation = require('./conversation')
@@ -95,6 +96,8 @@ async function messageHandler(snap, context) {
           return updateEntity(msgIntent, teamId, triggeringMessageId)
       case 'list':
           return listEntities(msgIntent, teamId, triggeringMessageId)
+      case 'show':
+          return showEntity(msgIntent, teamId, triggeringMessageId)
     default:
         console.log("Message ignored - not a supported action")
     }
@@ -187,6 +190,47 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
             "text-message", teamId)
     }).catch(err => {
         console.log('Error getting list of entities', err);
+    });
+    
+}
+
+
+const showEntity = (intent, teamId, triggeringMessageId) => {
+    console.log(`Showing ${intent.entityType} ${intent.entityId} (in team ${teamId})`)
+    let collection = `entities/${intent.entityType}/${teamId}`
+    if (intent.entityType === "team") {
+        collection = 'teams'
+    }
+    const ref = db.collection(collection).doc(intent.entityId)
+    return ref.get().then(snapshot => {
+        if (snapshot.empty) {
+            console.log(`Asked to show entity that doesn't exist: ${intent.entityType} ${intent.entityId}`)
+            return sendMessageBackToUser(`Apology, but I can't find the ${intent.entityType} ${intent.entityId}`, 
+                "answer", intent.entityType, null, 
+                "text-message", teamId)
+        }
+        const entityData = snapshot.data()
+        const entities = []
+        let text = `${intent.entityType} ${intent.entityId}:`
+        let token = ""
+        _.forOwn(entityData, (value, key) => {
+            const ignoreFields = ["id", "lastUpdateMessage", "teamId", "createMessage", "created", "updated"]
+            if (ignoreFields.indexOf(key) < 0) {
+                text += `${token} [${key}] ${value}`
+                token = ","
+            }
+        })
+        const updated = _.get(entityData, 'updated', null)
+        if (updated) {
+            const updatedString = moment(updated).calendar()
+            text += `${token} [Last update] ${updatedString}`
+        }
+        console.log(entityData)
+        return sendMessageBackToUser(text, 
+            "answer", intent.entityType, null, 
+            "text-message", teamId)
+    }).catch(err => {
+        console.log('Error showing entity', err);
     });
     
 }
