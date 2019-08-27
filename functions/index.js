@@ -222,7 +222,7 @@ const showEntity = (intent, teamId, triggeringMessageId) => {
         })
         const updated = _.get(entityData, 'updated', null)
         if (updated) {
-            const updatedString = moment(updated).calendar()
+            const updatedString = moment.unix(updated._seconds).calendar()            
             text += `${token} [Last update] ${updatedString}`
         }
         console.log(entityData)
