@@ -181,7 +181,7 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
         snapshot.forEach(doc => {
             const entity = doc.data()
             entities.push(entity)
-            text = `${text}${token}[${entity.id}] ${entity.text}`
+            text = `${text}${token}_${entity.id}_ ${entity.text}`
             token = ", "
         })
         console.log(entities)
@@ -223,7 +223,7 @@ const showEntity = (intent, teamId, triggeringMessageId) => {
         const updated = _.get(entityData, 'updated', null)
         if (updated) {
             const updatedString = moment.unix(updated._seconds).calendar()            
-            text += `${token} [Last update] ${updatedString}`
+            text += `${token} _Last update_ ${updatedString}`
         }
         console.log(entityData)
         return sendMessageBackToUser(text, 

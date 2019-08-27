@@ -121,6 +121,7 @@ class TeamChannel extends Component {
 
   progSendMessage = (msg) => {
     msg = msg.replace("[", "").replace("]", "")
+    // TODO use a "parse-speech-message" function
     const parts = msg.split(" ")
     const speechAct = parts[0]
     const entityType = parts[1]

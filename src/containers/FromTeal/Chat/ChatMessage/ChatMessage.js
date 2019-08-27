@@ -28,7 +28,7 @@ class ChatMessage extends Component {
         let msgText = this.props.text.replace(speechRegex, (match, code, id) => `<strong><a href='javascript:progSendMessage("${match}")'>${match}</a><strong>`)
         msgText = msgText.replace(strongRegex, (match, code, id) => {
           match = match.replace(/_/g, "")
-          return `<strong>${match}</strong>`
+          return `<br/><strong>${match}</strong>`
         })
         
         message = <div className={'TextMessage'} dangerouslySetInnerHTML={{__html: 
