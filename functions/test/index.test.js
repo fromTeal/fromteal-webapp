@@ -4,7 +4,7 @@ const chai = require('chai')
 const assert = chai.assert
 const sinon = require('sinon')
 
-
+const myFunctions = require('../index')
 
 
 // describe('Cloud Functions', () => {
@@ -26,3 +26,5 @@ const sinon = require('sinon')
 
 
 // })
+
+

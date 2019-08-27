@@ -4,13 +4,20 @@ const {PubSub} = require('@google-cloud/pubsub');
 const cors = require('cors')({
     origin: true,
 })
+const _ = require('lodash')
+const moment = require('moment');
+const TfIdf = require('node-tfidf')
+const emoji = require('node-emoji')
 const conversation = require('./conversation')
 const {ENTITIES_METADATA} = require('./entities')
+const textUtils = require('./text_utils')
 
 
+const FROMTEAL_AVATAR = "http://fromTeal.app/static/media/logo.44c521dc.png"
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT
 
+const TFIDF_THRESHOLD = 0
 
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
@@ -54,7 +61,7 @@ exports.sendMessage = functions.https.onRequest((req, res) => {
     const text = req.query.text
     const teamId = req.query.teamId
 
-    let ref = db.collection(`communicate/${teamId}/messages`)
+    let ref = db.collection(`messages/simple/${teamId}`)
 
     let insert = ref.add({
         teamId: teamId,
@@ -65,7 +72,7 @@ exports.sendMessage = functions.https.onRequest((req, res) => {
             status: "OK",
             ref: snapshot.ref
         }));
-});
+})
 
 
 exports.handleMessage = functions.firestore.document('/messages/simple/{teamId}/{documentId}')
@@ -73,12 +80,14 @@ exports.handleMessage = functions.firestore.document('/messages/simple/{teamId}/
 
 
 async function messageHandler(snap, context) {
-    console.log("Yay, invoked")
     const message = snap.data()
+    console.log(`Yay, invoked: '${JSON.stringify(message)}'`)
     const triggeringMessageId = context.params.documentId
 
     const teamId = context.params.teamId
     const msgIntent = conversation.detectIntent(message)
+
+    console.log(`Message basic intent: ${msgIntent.basicIntent}`)
 
     switch (msgIntent.basicIntent) {
       case 'create':
@@ -87,6 +96,8 @@ async function messageHandler(snap, context) {
           return updateEntity(msgIntent, teamId, triggeringMessageId)
       case 'list':
           return listEntities(msgIntent, teamId, triggeringMessageId)
+      case 'show':
+          return showEntity(msgIntent, teamId, triggeringMessageId)
     default:
         console.log("Message ignored - not a supported action")
     }
@@ -94,6 +105,14 @@ async function messageHandler(snap, context) {
 
 const createEntity = async (intent, teamId, triggeringMessageId) => {
     try {
+        // if no entity-id given, generate random one
+        if (_.get(intent, 'entityId', '') === '') {
+            intent.entityId = getRandomEmoji()
+            console.log(`No entityId given - generating random emoji: ${intent.entityId}`)
+        }
+        else {
+            console.log(`entityId provided: ${intent.entityId}`)
+        }
         const snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
         intent.teamId = teamId
         const messageId = await publishEvent("entity_created", intent)
@@ -122,18 +141,9 @@ const createEntityRecord = (intent, teamId, triggeringMessageId) => {
 const notifyOnEntityChange = (intent, teamId) => {
     const text = `${intent.entityType} ${intent.entityId} ${intent.toStatus}`
     console.log(text)
-    // Send a message back
-    let ref = db.collection(`messages/simple/${teamId}`)
-    return ref.add({
-        speechAct: "notify",
-        teamId: teamId,
-        type: "text-message",
-        text: text,
-        user: "bot@fromteal.app",
-        userName: "fromTeal",
-        userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
-        created: new Date()
-    })
+    return sendMessageBackToUser(text, 
+        "notify", intent.entityType, 
+        intent.entityId, "text-message", teamId)
 }
 
 const updateEntity = async (intent, teamId, triggeringMessageId) => {
@@ -171,26 +181,76 @@ const listEntities = (intent, teamId, triggeringMessageId) => {
         snapshot.forEach(doc => {
             const entity = doc.data()
             entities.push(entity)
-            text = `${text}${token}[${entity.id}] ${entity.text}`
+            text = `${text}${token}_${entity.id}_ ${entity.text}`
             token = ", "
         })
         console.log(entities)
-        // Send a message back
-        let ref = db.collection(`messages/simple/${teamId}`)
-        return ref.add({
-            speechAct: "answer",
-            teamId: teamId,
-            type: "text-message",
-            text: text,
-            user: "bot@fromteal.app",
-            userName: "fromTeal",
-            userPicture: "http://fromTeal.app/static/media/logo.44c521dc.png",
-            created: new Date()
-        })
+        return sendMessageBackToUser(text, 
+            "answer", intent.entityType, null, 
+            "text-message", teamId)
     }).catch(err => {
         console.log('Error getting list of entities', err);
     });
     
+}
+
+
+const showEntity = (intent, teamId, triggeringMessageId) => {
+    console.log(`Showing ${intent.entityType} ${intent.entityId} (in team ${teamId})`)
+    let collection = `entities/${intent.entityType}/${teamId}`
+    if (intent.entityType === "team") {
+        collection = 'teams'
+    }
+    const ref = db.collection(collection).doc(intent.entityId)
+    return ref.get().then(snapshot => {
+        if (snapshot.empty) {
+            console.log(`Asked to show entity that doesn't exist: ${intent.entityType} ${intent.entityId}`)
+            return sendMessageBackToUser(`Apology, but I can't find the ${intent.entityType} ${intent.entityId}`, 
+                "answer", intent.entityType, null, 
+                "text-message", teamId)
+        }
+        const entityData = snapshot.data()
+        const entities = []
+        let text = `${intent.entityType} ${intent.entityId}:`
+        let token = ""
+        _.forOwn(entityData, (value, key) => {
+            const ignoreFields = ["id", "lastUpdateMessage", "teamId", "createMessage", "created", "updated"]
+            if (ignoreFields.indexOf(key) < 0) {
+                text += `${token} _${key}:_ ${value}`
+                token = ","
+            }
+        })
+        const updated = _.get(entityData, 'updated', null)
+        if (updated) {
+            const updatedString = moment.unix(updated._seconds).calendar()            
+            text += `${token} _Last update_ ${updatedString}`
+        }
+        console.log(entityData)
+        return sendMessageBackToUser(text, 
+            "answer", intent.entityType, null, 
+            "text-message", teamId)
+    }).catch(err => {
+        console.log('Error showing entity', err);
+    });
+    
+}
+
+
+const sendMessageBackToUser = (text, speechAct, entityType, entityId, type, teamId) => {
+    console.log(`Creating message in team ${teamId}`)
+    let ref = db.collection(`messages/simple/${teamId}`)
+    return ref.add({
+        speechAct: speechAct,
+        entityType: entityType,
+        entityId: entityId,
+        teamId: teamId,
+        type: type,
+        text: text,
+        user: "bot@fromteal.app",
+        userName: "fromTeal",
+        userPicture: FROMTEAL_AVATAR,
+        created: new Date()
+    })
 }
 
 
@@ -203,8 +263,22 @@ const publishEvent = async (topicName, data) => {
 
 
 exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
-    .onPublish((message) => {
-    // TODO implement (e.g., send email when adding member)
+    .onPublish(async (message) => {
+    // if a purpose is suggested in a personal team, we want to ask for confirmation 
+    // - only on confirmation we would start the search for matching teams
+    message = message.json
+    console.log(message)
+    if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
+        console.log(`Handling purpose creation for team: ${message.teamId}`)
+        const team = await fetchTeam(message.teamId)
+        console.log(team)
+        if (team.teamType === 'person') {
+            const text = `Please confirm this is what you really love to work on: ${message.text}`
+            return sendMessageBackToUser(text, 
+                'confirm', 'purpose', message.entityId, 
+                'text-message', message.teamId)
+        }
+    }
   });
 
 
@@ -260,11 +334,39 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
             if (isArrayAttribute) {
                 attributeName = `${attributeName}s`
             }
-            return updateTeamAttribute(event.teamId, 
+            const addToArray = isArrayAttribute
+            const team = await updateTeamAttribute(event.teamId, 
                 attributeName, 
                 attributeValue, 
-                isArrayAttribute)
+                addToArray)
+            console.log(`Team ${event.teamId} attribute ${attributeName} updated.`)
         }
+    }
+    // if the approved entity is of type purpose & it is a person-team, 
+    // - perform a search for matching teams & send results back to user
+    console.log("About to check if this is an approved purpose")
+    if (event.entityType === 'purpose') {
+        const team = await fetchTeam(event.teamId)
+        console.log(`fetched team: ${JSON.stringify(team)}`)
+        if (team.teamType === 'person') {
+            console.log("Starting search")
+            // TODO perform search for matching teams
+            const matchingTeams = await searchForMatchingTeams(team.purpose, event.teamId)
+            if (matchingTeams.length > 0) {
+                const teamList = matchingTeams.map(teamId => `[show team ${teamId}]`)
+                let notifyText = `Found ${matchingTeams.length} teams matching your purpose: ${teamList.join(", ")}`
+                let resultMessageId = await sendMessageBackToUser(notifyText, 
+                    "notify", null, null, "text-message", event.teamId)
+                // resultMessageId = await sendMessageBackToUser(JSON.stringify(matchingTeams), 
+                //     "match", "team", null, "list-message", event.teamId)
+            }
+            else {
+                notifyText = "Couldn't find teams matching your purpose (we'll send here matches if we find some later)"
+                resultMessageId = await sendMessageBackToUser(notifyText, 
+                    "notify", null, null, "text-message", event.teamId)
+            }
+        }
+
     }
 })
 
@@ -278,19 +380,246 @@ const updateEntityStatus = async (entityId, entityType, entity, toStatus) => {
         .set(entity)
 }
 
-const updateTeamAttribute = async (teamId, attributeName, attributeValue, isArrayAttribute) => {
+const updateTeamAttribute = async (teamId, attributeName, attributeValue, addToArray) => {
     console.log(`Updating ${teamId}: setting ${attributeName} to ${attributeValue}`)
     const ref = db.collection('teams')
     const team = await ref.doc(teamId).get()
     const teamData = team.data()
     console.log(teamData)
-    if (isArrayAttribute) {
+    if (addToArray) {
         if (!(attributeValue in teamData[attributeName])) {
             teamData[attributeName].push(attributeValue)
         }
     } else {
         teamData[attributeName] = attributeValue
     }
-    console.log(`Updating to: ${teamData}`)
+    console.log(`Updating to: ${JSON.stringify(teamData)}`)
     return ref.doc(teamId).set(teamData)
+}
+
+
+const createPersonalTeam = async (user) => {
+    // try to use the username part of the email
+    let teamName = user.email.split("@")[0]
+    // check whether this name is available
+    const ref = db.collection('teams')
+    const existingTeam = await ref.doc(teamName).get()    
+    // else, use the full email
+    if (existingTeam !== null) {
+        teamName = user.email
+    }
+    // create a team & mark it as personal team
+    const newTeam = await ref.doc(teamName).set({
+        name: teamName,
+        teamType: 'person',
+        createdBy: user.email,
+        createdAt: new Date(),
+        tags: [],
+        members: [
+            user.email
+        ]
+    })
+    user.teamName = teamName
+    user.teamId = teamName
+    return user
+}
+
+exports.firstSignIn = functions.https.onRequest(async (req, res) => {
+    cors(req, res, async () => {
+        try {
+            const idToken = req.header('me')
+            let user = await verifyUser(idToken)
+            console.log(user)
+            console.log(`Handling 1st-sign-in of ${user.email}`)
+            user = await createPersonalTeam(user)
+            console.log(user)
+            const params = {teamId: user.teamId}
+            const eventId = await publishEvent("user_ready_for_onboard", params)
+            console.log(`Published event for user ${user.email} 1st sign-in: ${eventId}`)
+            // send a welcome message
+            const welcomeText = `Welcome to fromTeal, ${user.name}!`
+            const greetMsg = await sendMessageBackToUser(welcomeText, 
+                "greet", null, null, "text-message", user.teamId)
+            return res.send(user)
+        } catch (err) {
+            res.status(500).send(err)
+        }
+    })
+})
+
+
+
+exports.handleUserOnboardEvent = functions.pubsub.topic('user_ready_for_onboard')
+    .onPublish((message) => {
+    const params = message.json
+
+    // ask the user about her purpose
+    const purposeAskText = "To continue, please tell us what would you really love to work on? The thing you would work on if you didn't have to work at all.. "
+    return sendMessageBackToUser(purposeAskText, "ask", "purpose", null, "text-message", params.teamId)
+})
+
+
+
+exports.teamAutoTaggingJob = functions.pubsub.schedule('every 6 hour')
+    .onRun((context) => {
+    console.log('Team auto-tagging job invoked')
+    return publishEvent('team_auto_tagging_requested', "start")
+})
+
+exports.startTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_requested')
+    .onPublish(async (message) => {
+    console.log(`Team auto-tagging job requested ${JSON.stringify(message)}`)
+    // TODO read in pages, otherwise we'll exceed the function timeout
+    console.log("Fetching purpose text from all teams")
+    const teams = await fetchAllTeams()
+    const purposes = []
+    teams.forEach(team => {
+        const teamId = team.id
+        const teamData = team.data()
+        console.log(JSON.stringify(teamData))
+        const p = _.get(teamData, 'purpose', "")
+        console.log(`Current purpose is: ${p}`)
+        const purposeTokens = cleanPurpose(p)
+        console.log(`Current purpose tokens: ${purposeTokens}`)
+        if (purposeTokens !== "") {
+            purposes.push({
+                teamId: teamId,
+                purposeTokens: purposeTokens,
+                tags: teamData.tags,
+                allTags: _.get(teamData, 'allTags', [])
+            })
+        }
+    })
+    return publishEvent('team_auto_tagging_processing', purposes)
+})
+
+exports.handleTeamAutoTagging = functions.pubsub.topic('team_auto_tagging_processing')
+    .onPublish(async (message) => {
+    const teams = message.json
+    console.log(JSON.stringify(teams))
+    console.log(`Auto-tagging ${teams.length} teams `)
+    const updates = []
+    // calculate TF/IDF for all teams' purposes 
+    const tfidf = new TfIdf()
+    const tagsById = {}
+    const allTagsById = {}
+    teams.forEach(team => {
+        tfidf.addDocument(team.purposeTokens, team.teamId)
+        tagsById[team.teamId] = team.tags
+        allTagsById[team.teamId] = team.allTags
+        console.log(`Added document ${team.teamId} to TF/IDF model: ${team.purposeTokens}`)
+    })
+    tfidf.documents.forEach((d, i) => {
+        const teamId = d['__key']
+        console.log(`Going over document ${teamId}`)
+        const teamAutoTags = []  
+        for (const key in d) {
+            if (key !== '__key') {
+                if (d[key] > TFIDF_THRESHOLD) {
+                    console.log(`Found new auto-tag: ${key}`)
+                    teamAutoTags.push(key)
+                }
+            }
+        }
+        const existingTags = tagsById[teamId]
+        const existingAllTags = allTagsById[teamId]
+        const allTags = _.union(existingTags, teamAutoTags)
+        if (!_.isEqual(allTags, existingAllTags)) {
+            console.log(`Updating allTags for team ${teamId}: ${allTags}`)
+            // TODO if faster, send pubsub event to trigger the team update async
+            //updates.push(updateTeamAttribute(teamId, 'autoTags', teamAutoTags, false))
+            updates.push(updateTeamAttribute(teamId, 'allTags', allTags, false))
+        }
+    })
+    console.log(`${tfidf.documents.length} teams to be updated with auto-tags (${updates.length} updates)`)
+    return Promise.all(updates)
+})
+
+
+
+const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
+    // clean & tokenize purpose text
+    const tokens = cleanPurpose(purpose)
+    let allMatches = []
+    // for each token, search any team with this token as tag/auto-assigned-tag
+    const queryResults = []
+    tokens.split(" ").forEach(async w => {
+        console.log(`Searching ${w}`)
+        queryResults.push(searchTeamsByArrayAttributeValue("allTags", w))
+    })
+    const allResults = await Promise.all(queryResults)
+    allResults.forEach(result => {
+        if (!result.empty) {
+            const teams = []
+            result.forEach(t => {teams.push(t.id)})
+            if (teams) {
+                console.log(`Found ${JSON.stringify(teams)} matches`)
+                allMatches.push(...teams)
+            }
+        }
+    })
+    console.log(`In total, found ${allMatches.length} teams`)
+    // return the set of resulting teams, sorted by the number of tokens matched
+    const frequencyCounts = textUtils.countFrequency(allMatches)
+    console.log(`Frequency counts: ${JSON.stringify(frequencyCounts)}`)
+    const matches = textUtils.keysSortedByValues(frequencyCounts)
+    return matches.reverse()
+}
+
+
+//
+//  Data access (TODO move)
+//
+
+const fetchTeam = async (teamId) => {
+    const ref = db.collection('teams')
+    const team = await ref.doc(teamId).get()
+    return team.data()
+}
+
+const fetchAllTeams = async () => {
+    const ref = db.collection('teams')
+    return ref.get()
+}
+
+const searchTeamsByArrayAttributeValue = async (arrayField, value) => {
+    const ref = db.collection('teams')
+    return ref.where(arrayField, "array-contains", value).get()
+}
+
+//
+//  Utilities (TODO move)
+//
+
+
+// emoji
+
+const getRandomEmoji = () => {
+    // TODO implement
+    const randomEmoji = emoji.random()
+    console.log(`Generated random emoji: ${randomEmoji.key} - ${randomEmoji.emoji}`)
+    return randomEmoji.emoji
+}
+
+
+// nlp
+
+const cleanPurpose = (text) => {
+    // TODO library for text processing
+    const panctuations = [',', '.', '!', '-', '(', ')', "'", '"', "&"]
+    const commonPurposeWords = [
+        'help', 'offer', 'deliver', 'happy', 'awesome', 'people', 'save',
+        'stop', 'perfect', 'happier', 'change', 'easier', 'faster', 'improve',
+        'evolve', 'humanity', 'to', 'you'
+    ]
+    text = text.toLowerCase()
+    text = removeTokens(text, panctuations)
+    //text = removeTokens(text, stopwords_en)   // the node-tfidf already does it
+    text = removeTokens(text, commonPurposeWords)
+    return text
+}
+
+const removeTokens = (text, tokens) => {
+    tokens.forEach(t => { text = text.replace(t, '')})
+    return text
 }

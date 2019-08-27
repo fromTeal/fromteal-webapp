@@ -19,7 +19,7 @@ class Chat extends Component {
     return (
       <div ref={this.chat} className={'Chat'}>
         {this.props.messages.map((msg, i) => (
-          <ChatMessage key={"msg_" + i} {...msg}/>
+          <ChatMessage key={"msg_" + i} {...msg} progSendMessage={this.props.progSendMessage}/>
         ))}
       </div>
     )

@@ -25,12 +25,14 @@ class ChatInput extends Component {
       <div className={'ChatInput'}>
         <div className={'InputForm'}>
           <select ref={this.speechActSelect}>
+            <option key="" value="">(Action)</option>
           {this.props.speechActs.map((speechAct, i) => (<option key={speechAct} value={speechAct}>{speechAct}</option>))}
           </select>
           <select ref={this.entityTypeSelect}>
+            <option key="" value="">(Entity type)</option>
           {this.props.entityTypes.map((entityType, i) => (<option key={entityType} value={entityType}>{entityType}</option>))}
           </select>
-          <input type="text" placeholder="Entity-id" ref={this.entityIdInput}/>
+          <input type="text" placeholder="(Entity id)" ref={this.entityIdInput}/>
           <br/>
           <textarea ref={this.messageText} placeholder="Your message" rows="3"></textarea>
           <button className="SendButton" onClick={this.sendHandler}>Send</button>

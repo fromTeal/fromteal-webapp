@@ -11,6 +11,7 @@ class TeamChannel extends Component {
 
   state = {
     messages: [],
+    lastMessage: null,
     speechActs: [
       "suggest",
       "discuss",
@@ -18,6 +19,7 @@ class TeamChannel extends Component {
       "decline",
       "delete",
       "list",
+      "show",
       "invite",
       "add",
       // the following aren't supported yet
@@ -40,6 +42,7 @@ class TeamChannel extends Component {
       "tag",
       "tool",
       "member",
+      "team"
       // the following aren't supported yet
       // "product-concept",
       // "ux-spec",
@@ -67,11 +70,13 @@ class TeamChannel extends Component {
             // TODO handle other changes - update & delete!
             if (change.type === "added") {
               this.setState((prevState) => {
+                const lastMessage = change.doc.data()
                   const newMessages = [...prevState.messages]
-                  newMessages.push(change.doc.data())
+                  newMessages.push(lastMessage)
                   return {
                     ...prevState,
-                    messages: newMessages
+                    messages: newMessages,
+                    lastMessage: lastMessage
                   }
                 })
               }
@@ -80,18 +85,32 @@ class TeamChannel extends Component {
   }
 
   addMessage = (speechAct, entityType, entityId, text, teamId) => {
+    const newMessage = {
+      type: "text-message",
+      text: text,
+      user: this.context.user.email,
+      userName: this.context.user.name,
+      userPicture: this.context.user.picture,
+      created: new Date()
+    }
+    if (speechAct !== "") {
+      newMessage.speechAct = speechAct
+    }
+    if (entityType !== "") {
+      newMessage.entityType = entityType
+    }
+    if (entityId !== "") {
+      newMessage.entityId = entityId
+    }
+
+    // check if the previous message was a question 
+    // - if it is, we can assume this message is an answer & mark it as a reply to the previous message
+    if (this.state.lastMessage && 
+      (this.state.lastMessage.speechAct === 'ask' || this.state.lastMessage.speechAct === 'confirm')) {
+      newMessage.inReplyTo = this.state.lastMessage
+    }
     const db = firebase.firestore()
-    db.collection(`messages/simple/${teamId}`).add({
-        type: "text-message",
-        speechAct: speechAct,
-        entityType: entityType,
-        entityId: entityId,
-        text: text,
-        user: this.context.user.email,
-        userName: this.context.user.name,
-        userPicture: this.context.user.picture,
-        created: new Date()
-    })
+    db.collection(`messages/simple/${teamId}`).add(newMessage)
     .then(function(docRef) {
         console.log("Document written with ID: ", docRef.id);
     })
@@ -100,8 +119,21 @@ class TeamChannel extends Component {
     });
   }
 
+  progSendMessage = (msg) => {
+    msg = msg.replace("[", "").replace("]", "")
+    // TODO use a "parse-speech-message" function
+    const parts = msg.split(" ")
+    const speechAct = parts[0]
+    const entityType = parts[1]
+    let entityId = null
+    if (parts.length > 1) {
+      entityId = parts[2]
+    }
+    this.addMessage(speechAct, entityType, entityId, "", this.props.match.params.id)
+  }
+
   render() {
-    let chat = <Chat messages={this.state.messages}/>
+    let chat = <Chat messages={this.state.messages} progSendMessage={this.progSendMessage}/>
     if (this.state.loading) chat = <Spinner />
 
     return (

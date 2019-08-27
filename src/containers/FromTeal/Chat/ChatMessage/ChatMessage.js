@@ -9,12 +9,30 @@ import dibauAvatar from '../../../../assets/images/dibau.jpg'
 
 class ChatMessage extends Component {
 
+
+
   render() {
+    // TODO find nicer way to do this
+    if (!window.progSendMessage) {
+      window.progSendMessage = this.props.progSendMessage
+    }
+
     let message = null
 
     switch ( this.props.type ) {
       case ('text-message'):
-        message = <div className={'TextMessage'}>{this.props.text}</div>
+        // TODO cache the regexes
+        const speechRegex = /\[(.*?)\]/g
+        const strongRegex = /\_(.*?)\_/g
+        
+        let msgText = this.props.text.replace(speechRegex, (match, code, id) => `<strong><a href='javascript:progSendMessage("${match}")'>${match}</a><strong>`)
+        msgText = msgText.replace(strongRegex, (match, code, id) => {
+          match = match.replace(/_/g, "")
+          return `<br/><strong>${match}</strong>`
+        })
+        
+        message = <div className={'TextMessage'} dangerouslySetInnerHTML={{__html: 
+          msgText}}></div>
         break
       case ('image-message'):
         message = <div className={'ImageMessage'}><img src={this.props.imageUrl} width="250px"/></div>
