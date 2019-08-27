@@ -38,4 +38,33 @@ describe('Text Utils Functions', () => {
 
     })
 
+
+    describe('tokenExists should find whether a token exists in a given string', () => {
+
+        it('should return true when a token exists', () => {
+            const text = "Yes, it is"
+            const tokens = ["absolutlely", "yes", "indeed"]
+            return assert.equal(textUtilsFunctions.tokenExists(text, tokens), true)
+        })
+
+        it('should return false when a token does not exist', () => {
+            const text = "Yes, it is"
+            const tokens = ["no", "not", "false"]
+            return assert.equal(textUtilsFunctions.tokenExists(text, tokens), false)
+        })
+
+        it('should return true when a token exists and equals to the text', () => {
+            const text = "No"
+            const tokens = ["no", "not", "false"]
+            return assert.equal(textUtilsFunctions.tokenExists(text, tokens), true)
+        })
+      
+        it('should return false when a token does not exist and text is one word', () => {
+            const text = "Yes"
+            const tokens = ["no", "not", "false"]
+            return assert.equal(textUtilsFunctions.tokenExists(text, tokens), false)
+        })
+
+    })
+
 })

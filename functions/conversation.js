@@ -32,10 +32,10 @@ exports.detectIntent = (message) => {
             intent.speechAct = 'suggest'
             break
         case 'confirm':
-            if (textUtils.isPositive(message.inReplyTo.text)) {
+            if (textUtils.isPositive(message.text)) {
               intent.speechAct = 'approve'
             }
-            else if (textUtils.isNegative(message.inReplyTo.text)) {
+            else if (textUtils.isNegative(message.text)) {
               intent.speechAct = 'decline'
             }
             break
