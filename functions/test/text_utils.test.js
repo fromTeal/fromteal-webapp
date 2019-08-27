@@ -68,3 +68,41 @@ describe('Text Utils Functions', () => {
     })
 
 })
+
+
+describe('data-processing functions', () => {
+    let textUtilsFunctions
+
+    before(() => {
+        textUtilsFunctions = require('../text_utils')
+    })
+
+    after(() => {
+        test.cleanup()
+    })
+
+    it("should count frequencies", () => {
+        const arr = ["a", "d", "a", "b", "a", "d", "a", "c"]
+        const expected = {
+            "a": 4,
+            "d": 2,
+            "b": 1,
+            "c": 1
+        }
+        const got = textUtilsFunctions.countFrequency(arr)
+        assert.deepEqual(got, expected)
+    })
+
+    it("should return object keys sorted by values", () => {
+        const obj = {
+            "c": 1,
+            "a": 4,
+            "b": 1,
+            "d": 2
+        }
+        const expected = ["c", "b", "d", "a"]
+        const got = textUtilsFunctions.keysSortedByValues(obj)
+        assert.deepEqual(got, expected)
+    })
+
+})
