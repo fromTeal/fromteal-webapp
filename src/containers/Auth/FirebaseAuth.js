@@ -9,8 +9,6 @@ import AuthContext from '../auth-context'
 
 
 const FIRST_SIGN_IN_ENDPOINT = "https://us-central1-manual-pilot.cloudfunctions.net/firstSignIn"
-// const FIRST_SIGN_IN_ENDPOINT = "http://localhost:5000/manual-pilot/us-central1/firstSignIn"
-// console.log("ERRRRRRRROOOORRRRRRRR: USING LOCAL ENDPOINTS!!!!!!")
 
 
 // TODO configure & create TOS & Privacy links & pages
@@ -42,15 +40,6 @@ class FirebaseAuth extends Component {
 
   isFirstSignIn = (user) => {
     return (user.metadata.creationTime == user.metadata.lastSignInTime)
-    // console.log("ERRRRRROOORRRR: IS FIRST SIGN IN MOCKED !!!!!!!!!!!")
-    // return true
-    // TODO REVERT
-    // TODO REVERT
-    // TODO REVERT
-    // TODO REVERT
-    // TODO REVERT
-    // TODO REVERT
-    // TODO REVERT
   }
 
   handleFirstSignIn = (user) => {
