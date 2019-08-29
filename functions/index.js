@@ -115,7 +115,7 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
         }
         let snapshot
         if (_.get(intent, "entityType", "") === "team") {
-            snapshot = await createTeamRecord(intent, teamId, triggeringMessageId)
+            snapshot = await createTeam(intent, triggeringMessageId, "team", "Unpurposed")
         }
         else {
             snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
@@ -130,18 +130,37 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
 }
 
 
-const createTeamRecord = (intent, teamId, triggeringMessageId) => {
-    console.log(`Creating new ${intent.entityType} ${intent.entityId}`)
+const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
+    // create the team record 
+    const snapshot = await createTeamRecord(intent, triggeringMessageId, teamType, purpose)
+    // also create a member entity, for the current user
+    const memberIntent = {
+        entityType: "member",
+        entityId: intent.user,
+        text: intent.userName,
+        picture: intent.userPicture,
+        user: intent.user,
+        toStatus: "approved",
+    }
+    const memberTeamId = intent.entityId
+    const memberSnapshot = await createEntityRecord(memberIntent, memberTeamId, triggeringMessageId)
+    return snapshot
+}
+
+
+const createTeamRecord = (intent, triggeringMessageId, teamType, purpose) => {
+    console.log(`Creating new team ${intent.entityId}`)
     const ref = db.collection(`teams`)
     return ref.doc(`${intent.entityId}`).set({
       id: intent.entityId,
       name: intent.entityId,
-      purpose: "Unpurposed",
+      purpose: purpose,
       members: [intent.user],
       tags: [],
-      teamType: "team",
+      teamType: teamType,
       status: intent.toStatus,
       created: new Date(),
+      createdBy: intent.user,
       createMessage: triggeringMessageId
     })
 }
@@ -428,20 +447,18 @@ const createPersonalTeam = async (user) => {
     const ref = db.collection('teams')
     const existingTeam = await ref.doc(teamName).get()    
     // else, use the full email
-    if (existingTeam !== null) {
+    if (!existingTeam.empty) {
         teamName = user.email
     }
     // create a team & mark it as personal team
-    const newTeam = await ref.doc(teamName).set({
-        name: teamName,
-        teamType: 'person',
-        createdBy: user.email,
-        createdAt: new Date(),
-        tags: [],
-        members: [
-            user.email
-        ]
-    })
+    const teamIntent = {
+        entityId: teamName,
+        user: user.email,
+        userName: user.name,
+        userPicture: user.picture,
+        toStatus: "created"
+    }
+    const newTeam = await createTeam(teamIntent, null, "person", "Unpurposed")
     user.teamName = teamName
     user.teamId = teamName
     return user
