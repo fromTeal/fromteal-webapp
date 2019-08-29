@@ -113,7 +113,13 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
         else {
             console.log(`entityId provided: ${intent.entityId}`)
         }
-        const snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
+        let snapshot
+        if (_.get(intent, "entityType", "") === "team") {
+            snapshot = await createTeamRecord(intent, teamId, triggeringMessageId)
+        }
+        else {
+            snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
+        }
         intent.teamId = teamId
         const messageId = await publishEvent("entity_created", intent)
         console.log(`Message ${messageId} sent to topic: entity_created`)
@@ -121,6 +127,23 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
     } catch (err) {
       console.log('Error creating entity', err)
     }
+}
+
+
+const createTeamRecord = (intent, teamId, triggeringMessageId) => {
+    console.log(`Creating new ${intent.entityType} ${intent.entityId}`)
+    const ref = db.collection(`teams`)
+    return ref.doc(`${intent.entityId}`).set({
+      id: intent.entityId,
+      name: intent.entityId,
+      purpose: "Unpurposed",
+      members: [intent.user],
+      tags: [],
+      teamType: "team",
+      status: intent.toStatus,
+      created: new Date(),
+      createMessage: triggeringMessageId
+    })
 }
 
 
