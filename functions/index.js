@@ -19,6 +19,8 @@ const PROJECT_ID = process.env.GCLOUD_PROJECT
 
 const TFIDF_THRESHOLD = 0
 
+const DEFAULT_PURPOSE = "Unpurposed"
+
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
     databaseURL: "https://manual-pilot.firebaseio.com"
@@ -115,7 +117,7 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
         }
         let snapshot
         if (_.get(intent, "entityType", "") === "team") {
-            snapshot = await createTeam(intent, triggeringMessageId, "team", "Unpurposed")
+            snapshot = await createTeam(intent, triggeringMessageId, "team", DEFAULT_PURPOSE)
         }
         else {
             snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
@@ -131,8 +133,21 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
 
 
 const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
-    // create the team record 
-    const snapshot = await createTeamRecord(intent, triggeringMessageId, teamType, purpose)
+    const updates = []
+    const newTeamId = intent.entityId
+    // 1st create the team record 
+    const teamPromise = createTeamRecord(intent, triggeringMessageId, teamType, purpose)
+    updates.push(teamPromise)
+    // create name entity
+    const nameIntent = {
+        entityType: "name",
+        entityId: intent.name || intent.entityId,
+        text: intent.name || intent.entityId,
+        user: intent.user,
+        toStatus: "approved",
+    }
+    const namePromise = createEntityRecord(nameIntent, newTeamId, triggeringMessageId)
+    updates.push(namePromise)
     // also create a member entity, for the current user
     const memberIntent = {
         entityType: "member",
@@ -142,27 +157,29 @@ const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
         user: intent.user,
         toStatus: "approved",
     }
-    const memberTeamId = intent.entityId
-    const memberSnapshot = await createEntityRecord(memberIntent, memberTeamId, triggeringMessageId)
-    return snapshot
+    const memberPromise = createEntityRecord(memberIntent, newTeamId, triggeringMessageId)
+    updates.push(memberPromise)
+    return Promise.all(updates)
 }
 
 
 const createTeamRecord = (intent, triggeringMessageId, teamType, purpose) => {
-    console.log(`Creating new team ${intent.entityId}`)
+    console.log(`Creating new team ${intent.entityId} - ${intent.name}`)
     const ref = db.collection(`teams`)
-    return ref.doc(`${intent.entityId}`).set({
-      id: intent.entityId,
-      name: intent.entityId,
-      purpose: purpose,
-      members: [intent.user],
-      tags: [],
-      teamType: teamType,
-      status: intent.toStatus,
-      created: new Date(),
-      createdBy: intent.user,
-      createMessage: triggeringMessageId
-    })
+    const d = {
+        id: intent.entityId,
+        name: intent.name || intent.entityId,
+        purpose: purpose,
+        members: [intent.user],
+        tags: [],
+        teamType: teamType,
+        status: intent.toStatus,
+        created: new Date(),
+        createdBy: intent.user,
+        createMessage: triggeringMessageId
+      }
+    console.log(JSON.stringify(d))
+    return ref.doc(`${intent.entityId}`).set(d)
 }
 
 
@@ -453,12 +470,13 @@ const createPersonalTeam = async (user) => {
     // create a team & mark it as personal team
     const teamIntent = {
         entityId: teamName,
+        name: teamName,
         user: user.email,
         userName: user.name,
         userPicture: user.picture,
         toStatus: "created"
     }
-    const newTeam = await createTeam(teamIntent, null, "person", "Unpurposed")
+    const newTeam = await createTeam(teamIntent, null, "person", DEFAULT_PURPOSE)
     user.teamName = teamName
     user.teamId = teamName
     return user
