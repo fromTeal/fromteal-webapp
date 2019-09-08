@@ -8,6 +8,8 @@ exports.detectIntent = (message) => {
     intent.basicIntent = ''
     intent.text = message.text
     intent.user = message.user
+    intent.userName = message.userName
+    intent.userPicture = message.userPicture
     intent.toStatus = ''
     intent.metadataFound = false
     intent.validated = false

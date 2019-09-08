@@ -19,6 +19,8 @@ const PROJECT_ID = process.env.GCLOUD_PROJECT
 
 const TFIDF_THRESHOLD = 0
 
+const DEFAULT_PURPOSE = "Unpurposed"
+
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
     databaseURL: "https://manual-pilot.firebaseio.com"
@@ -113,7 +115,13 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
         else {
             console.log(`entityId provided: ${intent.entityId}`)
         }
-        const snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
+        let snapshot
+        if (_.get(intent, "entityType", "") === "team") {
+            snapshot = await createTeam(intent, triggeringMessageId, "team", DEFAULT_PURPOSE)
+        }
+        else {
+            snapshot = await createEntityRecord(intent, teamId, triggeringMessageId)
+        }
         intent.teamId = teamId
         const messageId = await publishEvent("entity_created", intent)
         console.log(`Message ${messageId} sent to topic: entity_created`)
@@ -121,6 +129,57 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
     } catch (err) {
       console.log('Error creating entity', err)
     }
+}
+
+
+const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
+    const updates = []
+    const newTeamId = intent.entityId
+    // 1st create the team record 
+    const teamPromise = createTeamRecord(intent, triggeringMessageId, teamType, purpose)
+    updates.push(teamPromise)
+    // create name entity
+    const nameIntent = {
+        entityType: "name",
+        entityId: intent.name || intent.entityId,
+        text: intent.name || intent.entityId,
+        user: intent.user,
+        toStatus: "approved",
+    }
+    const namePromise = createEntityRecord(nameIntent, newTeamId, triggeringMessageId)
+    updates.push(namePromise)
+    // also create a member entity, for the current user
+    const memberIntent = {
+        entityType: "member",
+        entityId: intent.user,
+        text: intent.userName,
+        picture: intent.userPicture,
+        user: intent.user,
+        toStatus: "approved",
+    }
+    const memberPromise = createEntityRecord(memberIntent, newTeamId, triggeringMessageId)
+    updates.push(memberPromise)
+    return Promise.all(updates)
+}
+
+
+const createTeamRecord = (intent, triggeringMessageId, teamType, purpose) => {
+    console.log(`Creating new team ${intent.entityId} - ${intent.name}`)
+    const ref = db.collection(`teams`)
+    const d = {
+        id: intent.entityId,
+        name: intent.name || intent.entityId,
+        purpose: purpose,
+        members: [intent.user],
+        tags: [],
+        teamType: teamType,
+        status: intent.toStatus,
+        created: new Date(),
+        createdBy: intent.user,
+        createMessage: triggeringMessageId
+      }
+    console.log(JSON.stringify(d))
+    return ref.doc(`${intent.entityId}`).set(d)
 }
 
 
@@ -361,7 +420,7 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
                 //     "match", "team", null, "list-message", event.teamId)
             }
             else {
-                notifyText = "Couldn't find teams matching your purpose (we'll send here matches if we find some later)"
+                notifyText = "Couldn't find teams matching your purpose yet. You can go ahead and [create team]"
                 resultMessageId = await sendMessageBackToUser(notifyText, 
                     "notify", null, null, "text-message", event.teamId)
             }
@@ -405,20 +464,19 @@ const createPersonalTeam = async (user) => {
     const ref = db.collection('teams')
     const existingTeam = await ref.doc(teamName).get()    
     // else, use the full email
-    if (existingTeam !== null) {
+    if (!existingTeam.empty) {
         teamName = user.email
     }
     // create a team & mark it as personal team
-    const newTeam = await ref.doc(teamName).set({
+    const teamIntent = {
+        entityId: teamName,
         name: teamName,
-        teamType: 'person',
-        createdBy: user.email,
-        createdAt: new Date(),
-        tags: [],
-        members: [
-            user.email
-        ]
-    })
+        user: user.email,
+        userName: user.name,
+        userPicture: user.picture,
+        toStatus: "created"
+    }
+    const newTeam = await createTeam(teamIntent, null, "person", DEFAULT_PURPOSE)
     user.teamName = teamName
     user.teamId = teamName
     return user
@@ -610,7 +668,7 @@ const cleanPurpose = (text) => {
     const commonPurposeWords = [
         'help', 'offer', 'deliver', 'happy', 'awesome', 'people', 'save',
         'stop', 'perfect', 'happier', 'change', 'easier', 'faster', 'improve',
-        'evolve', 'humanity', 'to', 'you'
+        'evolve', 'humanity', 'to', 'you', 'enable', 'everyone'
     ]
     text = text.toLowerCase()
     text = removeTokens(text, panctuations)

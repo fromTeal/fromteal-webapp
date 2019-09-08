@@ -105,6 +105,22 @@ const SINGLE_ATTRIBUTE_STATES = [
   }
   
 
+  const TEAM_STATES = [
+    "created",
+    "DELETED"
+  ]
+  
+  const TEAM_TRANSITIONS = {
+    "create": {
+      from: [],
+      to: "created"
+    },
+    "delete": {
+      from: TEAM_STATES,
+      to: "DELETED"
+    }
+  }
+  
 
   exports.ENTITIES_METADATA = {
     //
@@ -183,6 +199,18 @@ const SINGLE_ATTRIBUTE_STATES = [
       teamAttribute: true,
       states: MEMBER_STATES,
       transitions: MEMBER_TRANSITIONS
+    },
+    //
+    // team
+    //
+    // This actually isn't a "team-related-entity" such as the other entities
+    // TODO extend the concept of entities to include not just team-related-entities
+    //
+    team: {
+      dataType: "team",
+      teamAttribute: false,
+      states: TEAM_STATES,
+      transitions: TEAM_TRANSITIONS
     }
   }
   
