@@ -420,7 +420,7 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
                 //     "match", "team", null, "list-message", event.teamId)
             }
             else {
-                notifyText = "Couldn't find teams matching your purpose (we'll send here matches if we find some later)"
+                notifyText = "Couldn't find teams matching your purpose yet. You can go ahead and [create team]"
                 resultMessageId = await sendMessageBackToUser(notifyText, 
                     "notify", null, null, "text-message", event.teamId)
             }
@@ -668,7 +668,7 @@ const cleanPurpose = (text) => {
     const commonPurposeWords = [
         'help', 'offer', 'deliver', 'happy', 'awesome', 'people', 'save',
         'stop', 'perfect', 'happier', 'change', 'easier', 'faster', 'improve',
-        'evolve', 'humanity', 'to', 'you'
+        'evolve', 'humanity', 'to', 'you', 'enable', 'everyone'
     ]
     text = text.toLowerCase()
     text = removeTokens(text, panctuations)

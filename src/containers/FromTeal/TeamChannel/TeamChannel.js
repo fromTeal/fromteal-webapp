@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import _ from 'lodash'
 import firebase from '../../../firebase/firebase-config'
 import Chat from '../Chat/Chat'
 import ChatInput from '../Chat/ChatInput/ChatInput'
@@ -94,13 +95,13 @@ class TeamChannel extends Component {
       userPicture: this.context.user.picture,
       created: new Date()
     }
-    if (speechAct !== "") {
+    if (!_.isEmpty(speechAct, true)) {
       newMessage.speechAct = speechAct
     }
-    if (entityType !== "") {
+    if (!_.isEmpty(entityType, true)) {
       newMessage.entityType = entityType
     }
-    if (entityId !== "") {
+    if (!_.isEmpty(entityId, true)) {
       newMessage.entityId = entityId
     }
 
