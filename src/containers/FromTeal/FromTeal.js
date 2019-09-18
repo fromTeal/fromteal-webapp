@@ -56,13 +56,10 @@ class FromTeal extends Component {
           <div className="container">
             <img src={dibauAvatar} alt="Avatar"/>
             <p>
-              Hi, my name is Udi.
-              Every now & then, my mind comes up with ideas for new
-              projects. I really want to build these projects, but
-              it usually takes more than one person to build something
-              that's really great. So, I decided to build an app to help people like me to
-              <strong> team-up with like-minded people</strong> in order to
-              <strong> realize their dream projects</strong>. See how it works:
+            Every person in this world is valuable. We all have ideas &amp; skills to create value for others.
+            No person is more important than any other &amp; everyone have the right to be free to work on what they love, without anyone telling them what to do &amp; what to work on.
+            <br/>
+            <strong>fromTeal</strong> is helping people to create <strong>Teal Organizations</strong> - teams of people with shared purpose, working together as equal partners to achieve their purpose.
             </p>
 
             <iframe style={iframeStyle} width="500" height="350" src="//speakerdeck.com/player/7b754d59b56446598afccdf8c56de28c"/>

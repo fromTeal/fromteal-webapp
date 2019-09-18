@@ -86,8 +86,8 @@ async function messageHandler(snap, context) {
     console.log(`Yay, invoked: '${JSON.stringify(message)}'`)
     const triggeringMessageId = context.params.documentId
 
-    const teamId = context.params.teamId
-    const msgIntent = conversation.detectIntent(message)
+    const msgIntent = conversation.detectIntent(message)    
+    const teamId = (!_.isEmpty(msgIntent.teamId)) ? msgIntent.teamId : context.params.teamId
 
     console.log(`Message basic intent: ${msgIntent.basicIntent}`)
 
@@ -284,6 +284,10 @@ const showEntity = (intent, teamId, triggeringMessageId) => {
             const updatedString = moment.unix(updated._seconds).calendar()            
             text += `${token} _Last update_ ${updatedString}`
         }
+        if (intent.entityType === "team") {
+            // TODO check whether the current user is already a member
+            text += `_[join team ${intent.entityId}]_`
+        }
         console.log(entityData)
         return sendMessageBackToUser(text, 
             "answer", intent.entityType, null, 
@@ -337,6 +341,14 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
                 'confirm', 'purpose', message.entityId, 
                 'text-message', message.teamId)
         }
+    }
+    if (message.speechAct === 'join' && message.entityType === 'member') {
+        const memberTeam = message.entityId
+        const joinedTeam = message.teamId
+        const text = `We've notified team ${joinedTeam} that you'd like to join.`
+            return sendMessageBackToUser(text, 
+                'notify', 'member', message.entityId, 
+                'text-message', memberTeam)
     }
   });
 
