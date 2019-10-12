@@ -285,8 +285,12 @@ const showEntity = (intent, teamId, triggeringMessageId) => {
             text += `${token} _Last update_ ${updatedString}`
         }
         if (intent.entityType === "team") {
-            // TODO check whether the current user is already a member
-            text += `_[join team ${intent.entityId}]_`
+            // if we're inside the team being shown, don't suggest joining
+            if (intent.entityId !== teamId) {
+                // TODO check whether the current user is already a member
+                
+                text += `_[join team ${intent.entityId}]_`
+            }
         }
         console.log(entityData)
         return sendMessageBackToUser(text, 
@@ -355,6 +359,9 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
 
 exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
     .onPublish(async (message) => {
+
+    // TODO break into functions for handling different cases (with proper error handling & resilience)
+
      const event = message.json
      let newEntity = null
      const metadata = ENTITIES_METADATA[event.entityType]
@@ -381,6 +388,10 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
         console.log(`got ${updates.length} updates`)
         const results = await Promise.all(updates)
         console.log('done')
+    }
+    // if it's not a cardinality-1 entity, fetch the entity details
+    if (newEntity === null) {
+        newEntity = fetchEntity(event.entityId, event.entityType, event.teamId)
     }
     console.log(`Is team attribute? ${metadata.teamAttribute}`)
     // check whether this entity-type is a team attribute
@@ -438,6 +449,19 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
             }
         }
 
+    }
+    // if the approved entity is of type member & it is not a the member's person-team, 
+    // send an update to the member's person-team to inform the member about it
+    console.log("About to check if this is an approved member")
+    if (event.entityType === 'member') {
+        // TODO obtain the member personal team id & don't assume it's the entityId
+        const memberTeam = event.entityId
+        const approvedInTeam = event.teamId
+        if (memberTeam !== approvedInTeam) {
+            notifyText = `Congratulations! Your membership application to team ${approvedInTeam} was approved!`
+            resultMessageId = await sendMessageBackToUser(notifyText, 
+                "notify", null, null, "text-message", memberTeam)
+        }
     }
 })
 
@@ -656,6 +680,14 @@ const searchTeamsByArrayAttributeValue = async (arrayField, value) => {
     const ref = db.collection('teams')
     return ref.where(arrayField, "array-contains", value).get()
 }
+
+const fetchEntity = async (teamId, entityType, entityId) => {
+    console.log(`Fetching ${entityType} ${entityId} of team ${teamId}`)
+    const ref = db.collection(`entities/${entityType}/${teamId}`)
+    const entity = await ref.doc(entityId).get()
+    return entity.data()
+}
+
 
 //
 //  Utilities (TODO move)
