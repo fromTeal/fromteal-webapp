@@ -24,6 +24,7 @@ class TeamChannel extends Component {
       "invite",
       "add",
       "create",
+      "join",
       // the following aren't supported yet
       // "apply",
       // "deactivate",

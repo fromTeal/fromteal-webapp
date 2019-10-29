@@ -43,6 +43,19 @@ exports.detectIntent = (message) => {
             break
       }
     } 
+    // detect a join message
+    if ('speechAct' in message && message.speechAct === "join") {
+      // join is a special speech-act - 
+      // it flips the subject-entity-type & subject-entity-id with the object-entity-type & object-entity-id
+      // also, it changes the context of the team -
+      // it writes the message in the team the user tries to join
+      // TODO add metadata-based "macros" to the protocol, allowing friendly ways to say things
+      intent.teamId = intent.entityId
+      intent.objectEntityType = intent.entityType
+      intent.objectEntityId = intent.entityId
+      intent.entityType = "member"
+      intent.entityId = message.user
+    }
     if (intent.entityType in ENTITIES_METADATA) {
         intent.metadataFound = true
     }

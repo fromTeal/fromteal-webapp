@@ -67,6 +67,7 @@ const SINGLE_ATTRIBUTE_STATES = [
     "suggested",
     "added",
     "invited",
+    "asked-to-join",
     "discussed",
     "approved",
     "declined",
@@ -86,8 +87,12 @@ const SINGLE_ATTRIBUTE_STATES = [
       from: [],
       to: "invited"
     },
+    "join": {
+      from: [],
+      to: "asked-to-join"
+    },
     "discuss": {
-      from: ["suggested", "invited"],
+      from: ["suggested", "invited", "asked-to-join"],
       to: "discussed"
     },
     "approve": {
@@ -95,7 +100,7 @@ const SINGLE_ATTRIBUTE_STATES = [
       to: "approved"
     },
     "decline": {
-      from: ["invited", "discussed", "approved"],
+      from: ["asked-to-join", "invited", "discussed", "approved"],
       to: "declined"
     },
     "delete": {
