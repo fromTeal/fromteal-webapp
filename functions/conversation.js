@@ -49,7 +49,7 @@ exports.detectIntent = (message) => {
       // it flips the subject-entity-type & subject-entity-id with the object-entity-type & object-entity-id
       // also, it changes the context of the team -
       // it writes the message in the team the user tries to join
-      // TODO clean this! - protocol shouldn't have magic
+      // TODO add metadata-based "macros" to the protocol, allowing friendly ways to say things
       intent.teamId = intent.entityId
       intent.objectEntityType = intent.entityType
       intent.objectEntityId = intent.entityId
