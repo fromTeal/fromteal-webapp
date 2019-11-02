@@ -87,7 +87,16 @@ class TeamChannel extends Component {
         });
   }
 
-  addMessage = (speechAct, entityType, entityId, text, teamId) => {
+  parseMessage = (text, speechAct, entityType, entityId) => {
+    
+
+    return {text, speechAct, entityType, entityId}
+  }
+
+  addMessage = (text, teamId, speechAct=null, entityType=null, entityId=null) => {
+    if (speechAct == null || entityType == null) {
+      ({text, speechAct, entityType, entityId} = parseMessage(text, speechAct, entityType, entityId))
+    }
     const newMessage = {
       type: "text-message",
       text: text,

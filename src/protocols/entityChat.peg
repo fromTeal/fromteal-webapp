@@ -1,0 +1,8 @@
+grammar EntityChat
+
+message        <-  speechAct __ entityType __ entityId __? text?
+speechAct      <-  `join` / `create` / `add` / `invite` / `show` / `list` / `delete` / `decline` / `approve` / `discuss` / `suggest`
+entityType     <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team`
+entityId       <-  (!" " .)*
+text           <-  .
+__             <-  (" " / [\n\r\t])*
