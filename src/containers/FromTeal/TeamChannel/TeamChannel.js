@@ -6,6 +6,7 @@ import ChatInput from '../Chat/ChatInput/ChatInput'
 import Spinner from '../../../components/UI/Spinner/Spinner'
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 import AuthContext from '../../auth-context'
+import {parse} from '../../../protocols/entityChat'
 
 class TeamChannel extends Component {
   static contextType = AuthContext
@@ -88,14 +89,34 @@ class TeamChannel extends Component {
   }
 
   parseMessage = (text, speechAct, entityType, entityId) => {
-    
-
+    try {
+      const tree = parse(text)
+      text = "" // parsed successfully
+      _.keys(tree).forEach((k) => {
+        if (_.startsWith(k, "speechAct")) {
+          speechAct = tree[k].text
+        }
+        if (_.startsWith(k, "entityType")) {
+          entityType = tree[k].text
+        }
+        if (_.startsWith(k, "entityId")) {
+          entityId = tree[k].text
+        }
+        if (_.startsWith(k, "entityText")) {
+          text = tree[k].text
+        }
+      })
+    } catch (e) {
+      // not parsed successfully
+      // TODO validate it's a syntax error
+      speechAct = "say"
+    }  
     return {text, speechAct, entityType, entityId}
   }
 
   addMessage = (text, teamId, speechAct=null, entityType=null, entityId=null) => {
-    if (speechAct == null || entityType == null) {
-      ({text, speechAct, entityType, entityId} = parseMessage(text, speechAct, entityType, entityId))
+    if (_.isEmpty(speechAct) || _.isEmpty(entityType)) {
+      ({text, speechAct, entityType, entityId} = this.parseMessage(text, speechAct, entityType, entityId))
     }
     const newMessage = {
       type: "text-message",

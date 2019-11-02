@@ -1,8 +1,31 @@
 grammar EntityChat
 
-message        <-  speechAct __ entityType __ entityId __? text?
-speechAct      <-  `join` / `create` / `add` / `invite` / `show` / `list` / `delete` / `decline` / `approve` / `discuss` / `suggest`
-entityType     <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team`
-entityId       <-  (!" " .)*
-text           <-  .
-__             <-  (" " / [\n\r\t])*
+message              <-  msg_create_full / msg_create_with_id / msg_create / msg_update / msg_join / msg_invite / msg_list / msg_show_entity / msg_show
+
+msg_create           <-  speechAct_create __ entityType
+msg_create_with_id   <-  speechAct_create __ entityType __ entityId
+msg_create_full      <-  speechAct_create __ entityType __ entityId __ entityText
+speechAct_create     <-  `create` / `add` / `suggest`
+
+msg_update           <-  speechAct_update __ entityType __ entityId
+speechAct_update     <-  `decline` / `approve` / `discuss` / `delete`
+
+msg_join             <-  speechAct_join __ entityType_join __ entityId
+speechAct_join       <-  `join`
+entityType_join      <-  `team`
+
+msg_invite           <-  speechAct_invite __ entityType_invite __ entityId
+speechAct_invite     <-  `invite`
+entityType_invite    <-  `member`
+
+msg_list             <-  speechAct_list __ entityType `s`?
+speechAct_list       <-  `list`
+
+msg_show_entity      <-  speechAct_show __ entityType __ entityId
+msg_show             <-  speechAct_show __ entityType `s`?
+speechAct_show       <-  `show`
+
+entityType           <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team`
+entityId             <-  (!" " .)*
+entityText           <-  (.)+
+__                   <-  (" " / [\n\r\t])+

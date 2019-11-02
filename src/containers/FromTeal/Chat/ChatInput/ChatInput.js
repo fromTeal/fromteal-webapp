@@ -15,7 +15,7 @@ class ChatInput extends Component {
     const entityId = this.entityIdInput.current.value
     const text = this.messageText.current.value
     const teamId = this.props.teamId
-    this.props.addMessage(speechAct, entityType, entityId, text, teamId)
+    this.props.addMessage(text, teamId, speechAct, entityType, entityId)
     this.messageText.current.value = ""
     this.entityIdInput.current.value = ""
   }
