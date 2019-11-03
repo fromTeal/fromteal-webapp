@@ -1,6 +1,6 @@
 grammar EntityChat
 
-message              <-  msg_create_full / msg_create_with_id / msg_create / msg_update / msg_join / msg_invite / msg_list / msg_show_entity / msg_show
+message              <-  msg_create_full / msg_create_with_id / msg_create / msg_update / msg_join / msg_invite / msg_list / msg_show
 
 msg_create           <-  speechAct_create __ entityType
 msg_create_with_id   <-  speechAct_create __ entityType __ entityId
@@ -21,11 +21,10 @@ entityType_invite    <-  `member`
 msg_list             <-  speechAct_list __ entityType `s`?
 speechAct_list       <-  `list`
 
-msg_show_entity      <-  speechAct_show __ entityType __ entityId
-msg_show             <-  speechAct_show __ entityType `s`?
+msg_show             <-  speechAct_show __ entityType __ entityId
 speechAct_show       <-  `show`
 
 entityType           <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team`
-entityId             <-  (!" " .)*
+entityId             <-  (!" " .)+
 entityText           <-  (.)+
 __                   <-  (" " / [\n\r\t])+
