@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import {parse} from '../../../../protocols/entityChat'
 
 import Classes from './ChatInput.css'
 
@@ -8,6 +9,10 @@ class ChatInput extends Component {
   entityTypeSelect = React.createRef()
   entityIdInput = React.createRef()
   messageText = React.createRef()
+
+  state = {
+    isProtocolMessage: false
+  }
 
   sendHandler = () => {
     const speechAct = this.speechActSelect.current.value
@@ -20,7 +25,19 @@ class ChatInput extends Component {
     this.entityIdInput.current.value = ""
   }
 
+  highlightProtocolMessage = () => {
+    try {
+      parse(this.messageText.current.value)
+      // parsed successfully
+      this.setState({isProtocolMessage: true})
+    } catch (e) {
+      // not parsed successfully
+      this.setState({isProtocolMessage: false})
+    }  
+  }
+
   render() {
+    const textStyle = this.state.isProtocolMessage ? {backgroundColor: 'lightblue'} : {}
     return (
       <div className={'ChatInput'}>
         <div className={'InputForm'}>
@@ -34,7 +51,7 @@ class ChatInput extends Component {
           </select>
           <input type="text" placeholder="(Entity id)" ref={this.entityIdInput}/>
           <br/>
-          <textarea ref={this.messageText} placeholder="Your message" rows="3"></textarea>
+          <textarea ref={this.messageText} placeholder="Your message" rows="3" onChange={this.highlightProtocolMessage} style={textStyle}></textarea>
           <button className="SendButton" onClick={this.sendHandler}>Send</button>
         </div>
       </div>
