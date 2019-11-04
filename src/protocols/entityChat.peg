@@ -1,10 +1,8 @@
 grammar EntityChat
 
-message              <-  msg_create_full / msg_create_with_id / msg_create / msg_update / msg_join / msg_invite / msg_list / msg_show
+message              <-  msg_create / msg_update / msg_join / msg_invite / msg_list / msg_show
 
-msg_create           <-  speechAct_create __ entityType
-msg_create_with_id   <-  speechAct_create __ entityType __ entityId
-msg_create_full      <-  speechAct_create __ entityType __ entityId __ entityText
+msg_create           <-  speechAct_create __ entityType __ entityId __ entityText
 speechAct_create     <-  `create` / `add` / `suggest`
 
 msg_update           <-  speechAct_update __ entityType __ entityId
