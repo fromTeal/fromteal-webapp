@@ -12,7 +12,7 @@ entityType_add       <-  `member`
 
 msg_add_member       <-  speechAct_add __ entityType_add __ entityId
 
-msg_create_team      <-  speechAct_create_team __ entityType_team __ entityId
+msg_create_team      <-  speechAct_create __ entityType_team __ entityId
 speechAct_create     <-  `create`
 entityType_team      <-  `team`
 

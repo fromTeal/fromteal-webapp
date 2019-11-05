@@ -29,6 +29,7 @@ class ChatInput extends Component {
       // parsed successfully
       this.setState({isProtocolMessage: true})
     } catch (e) {
+      // console.log(e)
       // not parsed successfully
       this.setState({isProtocolMessage: false})
     }  

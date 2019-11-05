@@ -82,7 +82,7 @@
 
   var TreeNode4 = function(text, offset, elements) {
     TreeNode.apply(this, arguments);
-    this['speechAct_create_team'] = elements[0];
+    this['speechAct_create'] = elements[0];
     this['__'] = elements[3];
     this['entityType_team'] = elements[2];
     this['entityId'] = elements[4];
@@ -644,7 +644,7 @@
       }
       var index1 = this._offset, elements0 = new Array(5);
       var address1 = FAILURE;
-      address1 = this._read_speechAct_create_team();
+      address1 = this._read_speechAct_create();
       if (address1 !== FAILURE) {
         elements0[0] = address1;
         var address2 = FAILURE;

@@ -333,6 +333,9 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     // - only on confirmation we would start the search for matching teams
     message = message.json
     console.log(message)
+    // update the ids table
+    const ref = db.collection(`ids/${message.entityType}/${message.teamId}`)
+    await ref.doc(message.entityId).set({id: message.entityId, text: message.entityId})
     if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
         console.log(`Handling purpose creation for team: ${message.teamId}`)
         const team = await fetchTeam(message.teamId)
