@@ -21,6 +21,9 @@ class ChatInput extends Component {
     const teamId = this.props.teamId
     this.props.addMessage(text, teamId)
     this.messageText.current.value = ""
+    this.speechActSelect.current.value = ""
+    this.entityTypeSelect.current.value = ""
+    this.entityIdSelect.current.value = ""
     this.highlightProtocolMessage()
   }
 
@@ -100,7 +103,7 @@ class ChatInput extends Component {
           </select>
           <select ref={this.entityIdSelect} onChange={this.handleEntityIdSelection}>
             <option key="" value="">(Entity Id)</option>
-            {_.get(this.props.idsByType, this.state.selectedEntityType, []).map((id, i) => (<option key={id.id} value={id.id}>{id.id} - {id.text}</option>))}
+            {_.get(this.props.idsByType, this.state.selectedEntityType, []).map((id, i) => (<option key={id.id} value={id.id}>{id.id} - {_.truncate(id.text)}</option>))}
           </select>
         </div>
       </div>
