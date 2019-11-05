@@ -334,8 +334,12 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     message = message.json
     console.log(message)
     // update the ids table
-    const ref = db.collection(`ids/${message.entityType}/${message.teamId}`)
-    await ref.doc(message.entityId).set({id: message.entityId, text: message.entityId})
+    const ref = db.collection(`ids/by_team/${message.teamId}`)
+    await ref.doc(message.entityId).set({
+        id: message.entityId, 
+        entityType: message.entityType, 
+        text: _.get(message, 'text', message.entityId)
+    })
     if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
         console.log(`Handling purpose creation for team: ${message.teamId}`)
         const team = await fetchTeam(message.teamId)
