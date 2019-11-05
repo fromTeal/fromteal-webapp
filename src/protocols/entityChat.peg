@@ -1,9 +1,20 @@
 grammar EntityChat
 
-message              <-  msg_create / msg_update / msg_join / msg_invite / msg_list / msg_show
+message              <-  msg_suggest / msg_add_member_full / msg_add_member / msg_create_team / msg_update / msg_join / msg_invite / msg_list / msg_show
 
-msg_create           <-  speechAct_create __ entityType __ entityId __ entityText
-speechAct_create     <-  `create` / `add` / `suggest`
+msg_suggest          <-  speechAct_suggest __ entityType_suggest __ entityId __ entityText
+speechAct_suggest    <-  `suggest`
+entityType_suggest   <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool`
+
+msg_add_member_full  <-  speechAct_add __ entityType_add __ entityId __ entityText
+speechAct_add        <-  `add`
+entityType_add       <-  `member`
+
+msg_add_member       <-  speechAct_add __ entityType_add __ entityId
+
+msg_create_team      <-  speechAct_create_team __ entityType_team __ entityId
+speechAct_create     <-  `create`
+entityType_team      <-  `team`
 
 msg_update           <-  speechAct_update __ entityType __ entityId
 speechAct_update     <-  `decline` / `approve` / `discuss` / `delete`
