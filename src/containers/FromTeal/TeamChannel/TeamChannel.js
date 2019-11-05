@@ -13,6 +13,7 @@ class TeamChannel extends Component {
 
   state = {
     messages: [],
+    idsByType: {},
     lastMessage: null,
     speechActs: [
       "suggest",
@@ -85,7 +86,30 @@ class TeamChannel extends Component {
                 })
               }
             })
-        });
+        })
+    db.collection(`ids/by_team/${teamId}`).orderBy("entityType")
+        .onSnapshot((querySnapshot) => {
+          querySnapshot.docChanges().forEach((change) => {
+            // TODO handle other changes - update & delete!
+            if (change.type === "added") {
+              this.setState((prevState) => {
+                const lastId = change.doc.data()
+                const lastIdType = lastId.entityType
+                const newIdsByType = {...prevState.idsByType}
+                let idsByThisType = []
+                if (lastIdType in newIdsByType) {
+                  idsByThisType = newIdsByType[lastIdType]
+                }
+                idsByThisType.push(lastId)
+                newIdsByType[lastIdType] = idsByThisType
+                return {
+                  ...prevState,
+                  idsByType: newIdsByType
+                }
+              })
+            }
+          })
+        })
   }
 
   parseMessage = (text, speechAct, entityType, entityId) => {
@@ -176,6 +200,7 @@ class TeamChannel extends Component {
           teamId={this.props.match.params.id}
           speechActs={this.state.speechActs}
           entityTypes={this.state.entityTypes}
+          idsByType={this.state.idsByType}
           addMessage={this.addMessage}/>
       </React.Fragment>
     )

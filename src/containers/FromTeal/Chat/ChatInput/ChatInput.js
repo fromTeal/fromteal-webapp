@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import _ from 'lodash'
 import PropTypes from 'prop-types'
 import {parse} from '../../../../protocols/entityChat'
 
@@ -7,11 +8,12 @@ import Classes from './ChatInput.css'
 class ChatInput extends Component {
   speechActSelect = React.createRef()
   entityTypeSelect = React.createRef()
-  entityIdInput = React.createRef()
+  entityIdSelect = React.createRef()
   messageText = React.createRef()
 
   state = {
-    isProtocolMessage: false
+    isProtocolMessage: false,
+    selectedEntityType: ""
   }
 
   sendHandler = () => {
@@ -19,7 +21,6 @@ class ChatInput extends Component {
     const teamId = this.props.teamId
     this.props.addMessage(text, teamId)
     this.messageText.current.value = ""
-    this.entityIdInput.current.value = ""
     this.highlightProtocolMessage()
   }
 
@@ -49,6 +50,7 @@ class ChatInput extends Component {
 
   handleEntityTypeSelection = () => {
     const entityType = this.entityTypeSelect.current.value
+    this.setState({selectedEntityType: entityType})
     const parts = this.messageText.current.value.split(" ")
     if (parts) {
       // TODO fix - won't work well if using more than 1 space
@@ -58,6 +60,18 @@ class ChatInput extends Component {
     } else {
       this.messageText.current.value = entityType
     }
+    this.highlightProtocolMessage()
+  }
+
+  handleEntityIdSelection = () => {
+    const entityId = this.entityIdSelect.current.value
+    const parts = this.messageText.current.value.split(" ")
+    const newParts = []
+    if (parts.length > 0) newParts.push(parts[0])   // speechAct
+    if (parts.length > 1) newParts.push(parts[1])   // entityType
+    newParts.push(entityId)
+    if (parts.length > 3) newParts.push(parts.slice(3, parts.length).join(" "))   // rest
+    this.messageText.current.value = newParts.join(" ")
     this.highlightProtocolMessage()
   }
 
@@ -84,7 +98,10 @@ class ChatInput extends Component {
             <option key="" value="">(Entity type)</option>
           {this.props.entityTypes.map((entityType, i) => (<option key={entityType} value={entityType}>{entityType}</option>))}
           </select>
-          <input type="text" placeholder="(Entity id)" ref={this.entityIdInput}/>
+          <select ref={this.entityIdSelect} onChange={this.handleEntityIdSelection}>
+            <option key="" value="">(Entity Id)</option>
+            {_.get(this.props.idsByType, this.state.selectedEntityType, []).map((id, i) => (<option key={id.id} value={id.id}>{id.id} - {id.text}</option>))}
+          </select>
         </div>
       </div>
     )
