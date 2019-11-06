@@ -27,6 +27,14 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
+
+exports.getEntitiesMetadata = functions.https.onRequest((req, res) => {
+    cors(req, res, () => {
+        return res.send(ENTITIES_METADATA)
+    })
+})
+
+
 exports.getMyTeams = functions.https.onRequest((req, res) => {
     cors(req, res, () => {
         const idToken = req.header('me')

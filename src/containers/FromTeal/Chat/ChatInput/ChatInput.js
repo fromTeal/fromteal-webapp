@@ -13,6 +13,7 @@ class ChatInput extends Component {
 
   state = {
     isProtocolMessage: false,
+    selectedSpeechAct: "",
     selectedEntityType: ""
   }
 
@@ -41,6 +42,7 @@ class ChatInput extends Component {
 
   handleSpeechActSelection = () => {
     const speechAct = this.speechActSelect.current.value
+    this.setState({selectedSpeechAct: speechAct})
     const parts = this.messageText.current.value.split(" ")
     if (parts) {
       // TODO fix - won't work well if using more than 1 space
@@ -99,7 +101,7 @@ class ChatInput extends Component {
           </select>
           <select ref={this.entityTypeSelect} onChange={this.handleEntityTypeSelection}>
             <option key="" value="">(Entity type)</option>
-          {this.props.entityTypes.map((entityType, i) => (<option key={entityType} value={entityType}>{entityType}</option>))}
+            {_.get(this.props.entityTypesBySpeechAct, this.state.selectedSpeechAct, []).map((entityType, i) => (<option key={entityType} value={entityType}>{entityType}</option>))}
           </select>
           <select ref={this.entityIdSelect} onChange={this.handleEntityIdSelection}>
             <option key="" value="">(Entity Id)</option>

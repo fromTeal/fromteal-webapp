@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import _ from 'lodash'
+import axios from 'axios'
 import firebase from '../../../firebase/firebase-config'
 import Chat from '../Chat/Chat'
 import ChatInput from '../Chat/ChatInput/ChatInput'
@@ -8,6 +9,10 @@ import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 import AuthContext from '../../auth-context'
 import {parse} from '../../../protocols/entityChat'
 
+
+const ENTITIES_METADATA_URL = "https://us-central1-manual-pilot.cloudfunctions.net/getEntitiesMetadata"
+
+
 class TeamChannel extends Component {
   static contextType = AuthContext
 
@@ -15,48 +20,9 @@ class TeamChannel extends Component {
     messages: [],
     idsByType: {},
     lastMessage: null,
-    speechActs: [
-      "suggest",
-      "discuss",
-      "approve",
-      "decline",
-      "delete",
-      "list",
-      "show",
-      "invite",
-      "add",
-      "create",
-      "join",
-      // the following aren't supported yet
-      // "apply",
-      // "deactivate",
-      // "defer",
-      // "notify",
-      // "remove",
-      // "release",
-      // "replace",
-      // "start",
-      // "validate"
-    ],
-    entityTypes: [
-      "purpose",
-      "logo",
-      "name",
-      "description",
-      "intro",
-      "tag",
-      "tool",
-      "member",
-      "team"
-      // the following aren't supported yet
-      // "product-concept",
-      // "ux-spec",
-      // "tech-spec",
-      // "use-case",
-      // "user",
-      // "metric",
-      // "progress"
-    ],
+    speechActs: [],
+    entityTypes: [],
+    entityTypesBySpeechAct: {},
     loading: true
   }
 
@@ -110,6 +76,32 @@ class TeamChannel extends Component {
             }
           })
         })
+    // get & process the entities metadata
+    axios.get( ENTITIES_METADATA_URL )
+          .then( response => {
+            const metadata = response.data
+            const entityTypes = []
+            const speechActs = ["list", "show"]   // list & show are special speech acts, not derived from transitions
+            const entityTypesBySpeechAct = {
+              "list": [],
+              "show": []
+            }
+            _.keys(metadata).forEach((entityType) => {
+              const entityTypeMetadata = metadata[entityType]
+              entityTypes.push(entityType)
+              entityTypesBySpeechAct["list"].push(entityType)
+              entityTypesBySpeechAct["show"].push(entityType)
+              _.keys(entityTypeMetadata.transitions).forEach((speechAct) => {
+                  if (speechAct in entityTypesBySpeechAct) {
+                    entityTypesBySpeechAct[speechAct].push(entityType)
+                  } else {
+                    speechActs.push(speechAct)
+                    entityTypesBySpeechAct[speechAct] = [entityType]
+                  }
+                })
+              })
+            this.setState({entityTypes, speechActs, entityTypesBySpeechAct})
+      })
   }
 
   parseMessage = (text, speechAct, entityType, entityId) => {
@@ -200,6 +192,7 @@ class TeamChannel extends Component {
           teamId={this.props.match.params.id}
           speechActs={this.state.speechActs}
           entityTypes={this.state.entityTypes}
+          entityTypesBySpeechAct={this.state.entityTypesBySpeechAct}
           idsByType={this.state.idsByType}
           addMessage={this.addMessage}/>
       </React.Fragment>
