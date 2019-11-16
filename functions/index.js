@@ -27,6 +27,14 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
+
+exports.getEntitiesMetadata = functions.https.onRequest((req, res) => {
+    cors(req, res, () => {
+        return res.send(ENTITIES_METADATA)
+    })
+})
+
+
 exports.getMyTeams = functions.https.onRequest((req, res) => {
     cors(req, res, () => {
         const idToken = req.header('me')
@@ -86,7 +94,8 @@ async function messageHandler(snap, context) {
     console.log(`Yay, invoked: '${JSON.stringify(message)}'`)
     const triggeringMessageId = context.params.documentId
 
-    const msgIntent = conversation.detectIntent(message)    
+    const normalizedMessage = conversation.normalizedMessage(message)
+    const msgIntent = conversation.detectIntent(normalizedMessage)    
     const teamId = (!_.isEmpty(msgIntent.teamId)) ? msgIntent.teamId : context.params.teamId
 
     console.log(`Message basic intent: ${msgIntent.basicIntent}`)
@@ -333,6 +342,13 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     // - only on confirmation we would start the search for matching teams
     message = message.json
     console.log(message)
+    // update the ids table
+    const ref = db.collection(`ids/by_team/${message.teamId}`)
+    await ref.doc(message.entityId).set({
+        id: message.entityId, 
+        entityType: message.entityType, 
+        text: _.get(message, 'text', message.entityId)
+    })
     if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
         console.log(`Handling purpose creation for team: ${message.teamId}`)
         const team = await fetchTeam(message.teamId)

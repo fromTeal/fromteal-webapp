@@ -12,13 +12,13 @@
 
 .ChatInput select {
     vertical-align: top;
-    background-color: lightblue;
+    /* background-color: lightblue; */
     font-size: 1.1rem;
 }
 
 .ChatInput input {
     vertical-align: top;
-    background-color: lightblue;
+    /* background-color: lightblue; */
     font-size: 1.1rem;
 /*    background-color: #008080;
     color: white;

@@ -9,3 +9,14 @@
   background-color: lightblue;
   font-size: 1.1rem;
 }
+
+.ChatMessageTime {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.SpeechActRight {
+  float: right;
+  background-color: lightblue;
+  font-size: 1.1rem;
+ }
