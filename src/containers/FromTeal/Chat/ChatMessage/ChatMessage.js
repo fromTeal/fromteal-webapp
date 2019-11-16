@@ -47,10 +47,9 @@ class ChatMessage extends Component {
     return (
         <div className={'container'}>
           <img src={this.props.userPicture} alt={this.props.userName}></img>
-          <strong>{this.props.userName}</strong>: <span className={'SpeechAct'}>{this.props.speechAct} {this.props.entityType} {this.props.entityId}</span>
-          <br/>
+          <span className={'SpeechActRight'}>{this.props.speechAct}  {this.props.entityType} {this.props.entityId}</span>
+          <strong>{this.props.userName}</strong> <span className="ChatMessageTime">{this.props.created.toDate().toLocaleString()}</span><br/>
           {message}
-          <span className="time-right">{this.props.created.toDate().toLocaleString()}</span>
         </div>
     )
   }
