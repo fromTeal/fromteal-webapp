@@ -3,6 +3,17 @@ const _ = require('lodash')
 const textUtils = require('./text_utils')
 
 
+exports.normalizedMessage = (message) => {
+  const normalizedMessage = {...message}
+  if ('speechAct' in message) {
+    normalizedMessage.speechAct = message.speechAct.toLowerCase()
+  }
+  if ('entityType' in message) {
+    normalizedMessage.entityType = message.entityType.toLowerCase()
+  }
+  return normalizedMessage
+}
+
 exports.detectIntent = (message) => {
     const intent = {}
     intent.basicIntent = ''

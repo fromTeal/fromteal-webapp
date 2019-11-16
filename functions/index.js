@@ -94,7 +94,8 @@ async function messageHandler(snap, context) {
     console.log(`Yay, invoked: '${JSON.stringify(message)}'`)
     const triggeringMessageId = context.params.documentId
 
-    const msgIntent = conversation.detectIntent(message)    
+    const normalizedMessage = conversation.normalizedMessage(message)
+    const msgIntent = conversation.detectIntent(normalizedMessage)    
     const teamId = (!_.isEmpty(msgIntent.teamId)) ? msgIntent.teamId : context.params.teamId
 
     console.log(`Message basic intent: ${msgIntent.basicIntent}`)
