@@ -53,12 +53,9 @@ class FromTeal extends Component {
       const iframeStyle = {marginLeft: '7%'}
 
       let content = (
-        <div>
-          
-          <div className="container">
+        <div className={'homeContent'}>
             <DynamicContent contentId="home"/>
             <FirebaseAuth />
-          </div>
         </div>
       )
       if (this.state.isAuth) {
