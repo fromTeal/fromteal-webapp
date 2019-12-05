@@ -10,6 +10,7 @@ import FirebaseLogout from '../Auth/FirebaseLogout'
 import asyncComponent from '../../hoc/asyncComponent';
 import AuthContext from '../auth-context'
 import Layout from '../../hoc/Layout/Layout'
+import DynamicContent from '../../components/DynamicContent/DynamicContent'
 
 import dibauAvatar from '../../assets/images/dibau.jpg'
 
@@ -53,18 +54,10 @@ class FromTeal extends Component {
 
       let content = (
         <div>
+          
           <div className="container">
-            <img src={dibauAvatar} alt="Avatar"/>
-            <p>
-            Every person in this world is valuable. We all have ideas &amp; skills to create value for others.
-            No person is more important than any other &amp; everyone have the right to be free to work on what they love, without anyone telling them what to do &amp; what to work on.
-            <br/><br/>
-            <strong>fromTeal</strong> is helping people to create <strong><a href="https://en.wikipedia.org/wiki/Teal_organisation">Teal Organizations</a></strong> - teams of people with shared purpose, working together as equal partners to achieve their purpose.
-            If you've ever been to a Hackathon - then you experienced what's it like to work in a Teal Organization & how much it's more effective than any other type of organization.
-            <br/><br/>
-            Here's how fromTeal works:
-            </p>
-
+          <DynamicContent contentId="home"/>
+            
             <iframe style={iframeStyle} width="500" height="350" src="//speakerdeck.com/player/7b754d59b56446598afccdf8c56de28c"/>
 
             <FirebaseAuth />
