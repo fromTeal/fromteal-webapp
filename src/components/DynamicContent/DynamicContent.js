@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown from 'react-markdown/with-html'
 import firebase from '../../firebase/firebase-config'
 
 import classes from './DynamicContent.css'

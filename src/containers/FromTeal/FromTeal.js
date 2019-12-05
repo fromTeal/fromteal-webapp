@@ -57,9 +57,6 @@ class FromTeal extends Component {
           
           <div className="container">
             <DynamicContent contentId="home"/>
-            
-            <iframe style={iframeStyle} width="500" height="350" src="//speakerdeck.com/player/7b754d59b56446598afccdf8c56de28c"/>
-
             <FirebaseAuth />
           </div>
         </div>
