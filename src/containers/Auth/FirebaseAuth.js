@@ -8,7 +8,7 @@ import firebase from '../../firebase/firebase-config'
 import AuthContext from '../auth-context'
 
 
-const FIRST_SIGN_IN_ENDPOINT = "https://us-central1-manual-pilot.cloudfunctions.net/firstSignIn"
+const FIRST_SIGN_IN_ENDPOINT = `https://us-central1-${process.env.REACT_APP_FIREBASE_PROJECT_ID}.cloudfunctions.net/firstSignIn`
 
 
 // TODO configure & create TOS & Privacy links & pages
