@@ -5,10 +5,10 @@ const textUtils = require('./text_utils')
 
 exports.normalizedMessage = (message) => {
   const normalizedMessage = {...message}
-  if ('speechAct' in message) {
+  if (_.get(message, 'speechAct', null) !== null) {
     normalizedMessage.speechAct = message.speechAct.toLowerCase()
   }
-  if ('entityType' in message) {
+  if (_.get(message, 'entityType', null) !== null) {
     normalizedMessage.entityType = message.entityType.toLowerCase()
   }
   return normalizedMessage

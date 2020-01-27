@@ -6,9 +6,8 @@ import Team from '../Team/Team';
 import './Teams.css';
 
 
-const TEAMS_ENDPOINT = "https://us-central1-manual-pilot.cloudfunctions.net/getMyTeams"
-// const TEAMS_ENDPOINT = "http://localhost:5000/manual-pilot/us-central1/getMyTeams"
-// console.log("~~~ERRRRRRRROOOORRRRRRRR: USING LOCAL ENDPOINTS!!!!!!")
+const TEAMS_ENDPOINT = `https://us-central1-${process.env.REACT_APP_FIREBASE_PROJECT_ID}.cloudfunctions.net/getMyTeams`
+
 
 class Teams extends Component {
     state = {
