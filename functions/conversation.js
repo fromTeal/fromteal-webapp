@@ -35,7 +35,7 @@ exports.detectIntent = (message) => {
     } else if ('inReplyTo' in message && 'entityType' in message.inReplyTo) {
       intent.entityType = message.inReplyTo.entityType
     }
-    if ('speechAct' in message) {
+    if ('speechAct' in message && message.speechAct !== 'say') {
       intent.speechAct = message.speechAct
     } else if ('inReplyTo' in message && 'speechAct' in message.inReplyTo) {
       // if no speech-act, but this is a reply, infer speechAct from the message being replied

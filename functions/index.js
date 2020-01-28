@@ -23,7 +23,7 @@ const DEFAULT_PURPOSE = "Unpurposed"
 
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
-    databaseURL: "https://manual-pilot.firebaseio.com"
+    databaseURL: `https://${process.env.REACT_APP_FIREBASE_PROJECT_ID}.firebaseio.com`
 });
 const db = admin.firestore();
 
