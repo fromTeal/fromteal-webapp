@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import firebase from '../../../firebase/firebase-config'
 import axios from 'axios'
 
+import Spinner from '../../../components/UI/Spinner/Spinner'
 import Team from '../Team/Team';
 import './Teams.css';
 
@@ -11,7 +12,8 @@ const TEAMS_ENDPOINT = `https://us-central1-${process.env.REACT_APP_FIREBASE_PRO
 
 class Teams extends Component {
     state = {
-        teams: []
+        teams: [],
+        loading: true
     }
 
     componentDidMount () {
@@ -21,14 +23,15 @@ class Teams extends Component {
             axios.get( TEAMS_ENDPOINT, {headers: {'me': idToken}} )
                 .then( response => {
                     console.log(response.data)
-                    const teams = response.data.slice( 0, 4 );
+                    this.setState({loading: false})
+                    const teams = response.data;
                     const updatedTeams = teams.map( team => {
                         return {
                             ...team,
                             id: team.name
                         }
                     } );
-                    this.setState( { teams: updatedTeams } );
+                    this.setState({teams: updatedTeams});
                     // console.log( response );
                 } )
                 .catch( error => {
@@ -51,8 +54,8 @@ class Teams extends Component {
     }
 
     render () {
-        let teams = <p style={{ textAlign: 'center' }}>Something went wrong!</p>;
-        if ( !this.state.error ) {
+        let teams = <Spinner/>;
+        if ( !this.state.loading ) {
             teams = this.state.teams.map( team => {
                 return (
                     // <Link to={'/teams/' + team.id} key={team.id}>
