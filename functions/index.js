@@ -154,8 +154,10 @@ const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
         text: intent.name || intent.entityId,
         user: intent.user,
         toStatus: "approved",
+        teamId: newTeamId
     }
     const namePromise = createEntityRecord(nameIntent, newTeamId, triggeringMessageId)
+    const nameCreatedMessageId = await publishEvent("entity_created", nameIntent)
     updates.push(namePromise)
     // also create a member entity, for the current user
     const memberIntent = {
@@ -165,8 +167,10 @@ const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
         picture: intent.userPicture,
         user: intent.user,
         toStatus: "approved",
+        teamId: newTeamId
     }
     const memberPromise = createEntityRecord(memberIntent, newTeamId, triggeringMessageId)
+    const memberCreatedMessageId = await publishEvent("entity_created", memberIntent)
     updates.push(memberPromise)
     return Promise.all(updates)
 }
