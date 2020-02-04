@@ -178,7 +178,8 @@ class TeamChannel extends Component {
     if (parts.length > 1) {
       entityId = parts[2]
     }
-    this.addMessage(speechAct, entityType, entityId, "", this.props.match.params.id)
+    const teamId = this.props.match.params.id
+    this.addMessage(msg, teamId, speechAct, entityType, entityId, "", this.props.match.params.id)
   }
 
   render() {
