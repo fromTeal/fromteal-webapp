@@ -421,7 +421,7 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
         console.log(`Checking dataType ${metadata.dataType}`)
         switch (metadata.dataType) {
             case 'short_string':
-                attributeValue = newEntity.entityId
+                attributeValue = newEntity.text
                 break
             case 'string':
                 attributeValue = newEntity.text
