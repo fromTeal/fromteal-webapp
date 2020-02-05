@@ -28,7 +28,7 @@ class Teams extends Component {
                     const updatedTeams = teams.map( team => {
                         return {
                             ...team,
-                            id: team.name
+                            id: team.id
                         }
                     } );
                     this.setState({teams: updatedTeams});
