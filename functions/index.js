@@ -372,20 +372,29 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
                 'notify', 'member', message.entityId, 
                 'text-message', memberTeam)
     }
+    if (message.toStatus === 'approved') {
+        return handleApprovedEntity(message)
+    }
   });
 
 
 exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
     .onPublish(async (message) => {
 
+     const event = message.json
+     console.log(`team is ${event.teamId}`)
+     if (event.toStatus === 'approved') {
+         return handleApprovedEntity(event)
+     }
+
+})
+
+
+const handleApprovedEntity = async (event) => {
     // TODO break into functions for handling different cases (with proper error handling & resilience)
 
-     const event = message.json
-     let newEntity = null
-     const metadata = ENTITIES_METADATA[event.entityType]
-     console.log(`team is ${event.teamId}`)
-    // currently, we only handle events of approving entities, so ignoring other states
-    if (event.toStatus !== 'approved') return
+    const metadata = ENTITIES_METADATA[event.entityType]
+    let newEntity = null
     // check whether this entity-type has max-cardinality=1 
     if (metadata.maxCardinality === 1) {
         // look up other approved entities of this type
@@ -484,8 +493,8 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
             resultMessageId = await sendMessageBackToUser(notifyText, 
                 "notify", null, null, "text-message", memberTeam)
         }
-    }
-})
+    }    
+}
 
 
 const updateEntityStatus = async (entityId, entityType, entity, toStatus) => {
