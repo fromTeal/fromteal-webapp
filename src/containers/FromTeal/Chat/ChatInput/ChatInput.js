@@ -5,6 +5,18 @@ import {parse} from '../../../../protocols/entityChat'
 
 import Classes from './ChatInput.css'
 
+
+const stages = {
+  SPEECH_ACT: "speechAct",
+  ENTITY_TYPE: "entityType",
+  EXISTING_ENTITY_ID: "existingEntityId",
+  NEW_ENTITY_ID: "newEntityId",
+  ENTITY_TEXT: "entityText",
+  INVALID: "invalid",
+  DONE: "done"
+}
+
+
 class ChatInput extends Component {
   speechActSelect = React.createRef()
   entityTypeSelect = React.createRef()
@@ -14,7 +26,8 @@ class ChatInput extends Component {
   state = {
     isProtocolMessage: false,
     selectedSpeechAct: "",
-    selectedEntityType: ""
+    selectedEntityType: "",
+    stage: stages.SPEECH_ACT
   }
 
   sendHandler = () => {
@@ -28,16 +41,44 @@ class ChatInput extends Component {
     this.highlightProtocolMessage()
   }
 
-  highlightProtocolMessage = () => {
+  parseMessage = () => {
+    // side effect: mark state.isProtocolMessage
     try {
-      parse(this.messageText.current.value)
+      const parsedMsg = parse(this.messageText.current.value)
       // parsed successfully
       this.setState({isProtocolMessage: true})
+      return parsedMsg
     } catch (e) {
       // console.log(e)
       // not parsed successfully
       this.setState({isProtocolMessage: false})
+      return {}
     }  
+  }
+
+  determineStage = (parsedMsg) => {
+    console.log("parsed msg:")
+    console.log(parsedMsg)
+    if (parsedMsg) {
+      const tokens = this.messageText.current.value.split(" ")
+      if (tokens.length === 1) return stages.SPEECH_ACT
+      if (tokens.length === 2) {
+        const speechAct = tokens[0]
+        this.setState({selectedSpeechAct: speechAct})
+        return stages.ENTITY_TYPE
+      }
+      if (tokens.length === 3) {
+        const entityType = tokens[1]
+        this.setState({selectedEntityType: entityType})
+        return stages.EXISTING_ENTITY_ID
+      }
+    }
+    return stages.DONE
+  }
+
+  handleTextChange = () => {
+    const parsedMsg = this.parseMessage()
+    this.setState({stage: this.determineStage(parsedMsg)})
   }
 
   handleSpeechActSelection = () => {
@@ -87,13 +128,41 @@ class ChatInput extends Component {
     }
   }
 
+  getSuggestions = (howMany) => {
+    let options = []
+    console.log(`stage is ${this.state.stage}`)
+    switch (this.state.stage) {
+      case stages.SPEECH_ACT:
+        options = this.props.speechActs
+        break
+      case stages.ENTITY_TYPE:
+        options = _.get(this.props.entityTypesBySpeechAct, this.state.selectedSpeechAct, [])
+        break
+      case stages.EXISTING_ENTITY_ID:
+        options = _.get(this.props.idsByType, this.state.selectedEntityType, [])
+        break
+    }
+    return options.slice(0, howMany)
+  }
+
   render() {
     const textInputColor = this.state.isProtocolMessage ? {backgroundColor: 'lightblue'} : {}
     const textStyle = {...textInputColor, width: '99%'}
+    const optionsSuggestionListStyle = {display: 'flex', flexFlow: 'row nowrap', border: 'solid green 0.5px', justifyContent: 'center'}
+    const optionSuggestionStyle = {width: '200px'}
+    let suggestions = this.getSuggestions(3)
+    let options = suggestions.map( opt => {
+      return (
+          <div key={opt} style={optionSuggestionStyle}>{opt}</div>              
+      );
+    })
     return (
       <div className={'ChatInput'}>
         <div className={'InputForm'}>
-          <textarea ref={this.messageText} placeholder="Your message" rows="3" onChange={this.highlightProtocolMessage} onKeyPress={this.handleKeyPressed} style={textStyle}></textarea>
+          <div style={optionsSuggestionListStyle}>
+            {options}
+          </div>
+          <textarea ref={this.messageText} placeholder="Your message" rows="3" onChange={this.handleTextChange} onKeyPress={this.handleKeyPressed} style={textStyle}></textarea>
           <br/>
           <select ref={this.speechActSelect} onChange={this.handleSpeechActSelection}>
             <option key="" value="">(Action)</option>
