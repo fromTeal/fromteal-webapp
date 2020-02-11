@@ -38,7 +38,8 @@ class ChatInput extends Component {
     this.speechActSelect.current.value = ""
     this.entityTypeSelect.current.value = ""
     this.entityIdSelect.current.value = ""
-    this.highlightProtocolMessage()
+    this.setState({stage: stages.SPEECH_ACT})
+    this.parseMessage()
   }
 
   parseMessage = () => {
@@ -91,7 +92,7 @@ class ChatInput extends Component {
     } else {
       this.messageText.current.value = speechAct + " "
     }
-    this.highlightProtocolMessage()
+    this.parseMessage()
   }
 
   handleEntityTypeSelection = () => {
@@ -106,7 +107,7 @@ class ChatInput extends Component {
     } else {
       this.messageText.current.value = entityType
     }
-    this.highlightProtocolMessage()
+    this.parseMessage()
   }
 
   handleEntityIdSelection = () => {
@@ -118,7 +119,7 @@ class ChatInput extends Component {
     newParts.push(entityId)
     if (parts.length > 3) newParts.push(parts.slice(3, parts.length).join(" "))   // rest
     this.messageText.current.value = newParts.join(" ")
-    this.highlightProtocolMessage()
+    this.parseMessage()
   }
 
   handleKeyPressed = (event) => {
@@ -139,7 +140,7 @@ class ChatInput extends Component {
         options = _.get(this.props.entityTypesBySpeechAct, this.state.selectedSpeechAct, [])
         break
       case stages.EXISTING_ENTITY_ID:
-        options = _.get(this.props.idsByType, this.state.selectedEntityType, [])
+        options = _.get(this.props.idsByType, this.state.selectedEntityType, []).map(id => id.id)
         break
     }
     return options.slice(0, howMany)
