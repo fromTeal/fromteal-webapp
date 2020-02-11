@@ -82,44 +82,58 @@ class ChatInput extends Component {
     this.setState({stage: this.determineStage(parsedMsg)})
   }
 
-  handleSpeechActSelection = () => {
-    const speechAct = this.speechActSelect.current.value
-    this.setState({selectedSpeechAct: speechAct})
+  injectSuggestion = (suggestion) => {
     const parts = this.messageText.current.value.split(" ")
-    if (parts) {
-      // TODO fix - won't work well if using more than 1 space
-      this.messageText.current.value = speechAct + " " + parts.slice(1, parts.length).join(" ")
-    } else {
-      this.messageText.current.value = speechAct + " "
+    switch (this.state.stage) {
+      case stages.SPEECH_ACT:
+        this.setState({selectedSpeechAct: suggestion})
+        if (parts) {
+          // TODO fix - won't work well if using more than 1 space
+          this.messageText.current.value = suggestion + " " + parts.slice(1, parts.length).join(" ")
+        }
+        break
+      case stages.ENTITY_TYPE:
+        this.setState({selectedEntityType: suggestion})
+        if (parts) {
+          // TODO fix - won't work well if using more than 1 space
+          const speechAct = parts[0]
+          const rest = parts.length > 2 ? " " + parts.slice(2, parts.length).join(" ") : ""
+          this.messageText.current.value = speechAct + " " + suggestion + rest
+        }
+        break
+      case stages.EXISTING_ENTITY_ID:
+        this.setState({selectedEntityType: suggestion})
+        const newParts = []
+        if (parts.length > 0) newParts.push(parts[0])   // speechAct
+        if (parts.length > 1) newParts.push(parts[1])   // entityType
+        newParts.push(suggestion)
+        if (parts.length > 3) newParts.push(parts.slice(3, parts.length).join(" "))   // rest
+        this.messageText.current.value = newParts.join(" ")
+        break
+    }
+    if (!parts) {
+      this.messageText.current.value = suggestion + " "
     }
     this.parseMessage()
+  } 
+
+  handleSuggestionClick = (e) => {
+    this.injectSuggestion(e.target.id)
+  }
+
+  handleSpeechActSelection = () => {
+    const speechAct = this.speechActSelect.current.value
+    return this.injectSuggestion(speechAct)
   }
 
   handleEntityTypeSelection = () => {
     const entityType = this.entityTypeSelect.current.value
-    this.setState({selectedEntityType: entityType})
-    const parts = this.messageText.current.value.split(" ")
-    if (parts) {
-      // TODO fix - won't work well if using more than 1 space
-      const speechAct = parts[0]
-      const rest = parts.length > 2 ? " " + parts.slice(2, parts.length).join(" ") : ""
-      this.messageText.current.value = speechAct + " " + entityType + rest
-    } else {
-      this.messageText.current.value = entityType
-    }
-    this.parseMessage()
+    return this.injectSuggestion(entityType)
   }
 
   handleEntityIdSelection = () => {
     const entityId = this.entityIdSelect.current.value
-    const parts = this.messageText.current.value.split(" ")
-    const newParts = []
-    if (parts.length > 0) newParts.push(parts[0])   // speechAct
-    if (parts.length > 1) newParts.push(parts[1])   // entityType
-    newParts.push(entityId)
-    if (parts.length > 3) newParts.push(parts.slice(3, parts.length).join(" "))   // rest
-    this.messageText.current.value = newParts.join(" ")
-    this.parseMessage()
+    return this.injectSuggestion(entityId)
   }
 
   handleKeyPressed = (event) => {
@@ -154,7 +168,7 @@ class ChatInput extends Component {
     let suggestions = this.getSuggestions(3)
     let options = suggestions.map( opt => {
       return (
-          <div key={opt} style={optionSuggestionStyle}>{opt}</div>              
+          <div key={opt} style={optionSuggestionStyle} id={opt} onClick={this.handleSuggestionClick}>{opt}</div>              
       );
     })
     return (
