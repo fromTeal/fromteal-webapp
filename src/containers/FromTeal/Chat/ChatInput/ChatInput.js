@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
 import {parse} from '../../../../protocols/entityChat'
+import emoji from 'node-emoji'
 
 import Classes from './ChatInput.css'
 
@@ -71,6 +72,9 @@ class ChatInput extends Component {
       if (tokens.length === 3) {
         const entityType = tokens[1]
         this.setState({selectedEntityType: entityType})
+        if (tokens[0] === 'suggest') {
+          return stages.NEW_ENTITY_ID
+        }
         return stages.EXISTING_ENTITY_ID
       }
     }
@@ -110,11 +114,15 @@ class ChatInput extends Component {
         if (parts.length > 3) newParts.push(parts.slice(3, parts.length).join(" "))   // rest
         this.messageText.current.value = newParts.join(" ")
         break
+      case stages.NEW_ENTITY_ID:
+        this.messageText.current.value = this.messageText.current.value + suggestion + " "
+        break
     }
     if (!parts) {
       this.messageText.current.value = suggestion + " "
     }
-    this.parseMessage()
+    const parsedMsg = this.parseMessage()
+    this.setState({stage: this.determineStage(parsedMsg)})
   } 
 
   handleSuggestionClick = (e) => {
@@ -156,6 +164,19 @@ class ChatInput extends Component {
       case stages.EXISTING_ENTITY_ID:
         options = _.get(this.props.idsByType, this.state.selectedEntityType, []).map(id => id.id)
         break
+      case stages.NEW_ENTITY_ID:
+        options = []
+        for(var i = 0; i < howMany; i++) {
+          options.push(emoji.random().emoji);
+      }
+        break
+    }
+    // filter by current token
+    if (this.messageText.current) {
+      const token = this.messageText.current.value.split(" ").pop()
+      if (token) {
+        options = options.filter(opt => opt.indexOf(token) === 0)
+      }
     }
     return options.slice(0, howMany)
   }
@@ -163,8 +184,8 @@ class ChatInput extends Component {
   render() {
     const textInputColor = this.state.isProtocolMessage ? {backgroundColor: 'lightblue'} : {}
     const textStyle = {...textInputColor, width: '99%'}
-    const optionsSuggestionListStyle = {display: 'flex', flexFlow: 'row nowrap', border: 'solid green 0.5px', justifyContent: 'center'}
-    const optionSuggestionStyle = {width: '200px'}
+    const optionsSuggestionListStyle = {display: 'flex', flexFlow: 'row nowrap', justifyContent: 'center'}
+    const optionSuggestionStyle = {width: '200px', border: 'solid gray 0.5px', padding: '10px'}
     let suggestions = this.getSuggestions(3)
     let options = suggestions.map( opt => {
       return (
