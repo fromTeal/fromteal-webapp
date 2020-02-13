@@ -36,9 +36,9 @@ class ChatInput extends Component {
     const teamId = this.props.teamId
     this.props.addMessage(text, teamId)
     this.messageText.current.value = ""
-    this.speechActSelect.current.value = ""
-    this.entityTypeSelect.current.value = ""
-    this.entityIdSelect.current.value = ""
+    if (this.speechActSelect.current) this.speechActSelect.current.value = ""
+    if (this.entityTypeSelect.current) this.entityTypeSelect.current.value = ""
+    if (this.entityIdSelect.current) this.entityIdSelect.current.value = ""
     this.setState({stage: stages.SPEECH_ACT})
     this.parseMessage()
   }
@@ -192,6 +192,32 @@ class ChatInput extends Component {
           <div key={opt} style={optionSuggestionStyle} id={opt} onClick={this.handleSuggestionClick}>{opt}</div>              
       );
     })
+    let optionsDropDown = null
+    switch (this.state.stage) {
+      case stages.SPEECH_ACT:
+        optionsDropDown = (
+          <select ref={this.speechActSelect} onChange={this.handleSpeechActSelection}>
+            <option key="" value="">(Action)</option>
+          {this.props.speechActs.map((speechAct, i) => (<option key={speechAct} value={speechAct}>{speechAct}</option>))}
+          </select>
+        )
+        break
+      case stages.ENTITY_TYPE:
+        optionsDropDown = (
+          <select ref={this.entityTypeSelect} onChange={this.handleEntityTypeSelection}>
+            <option key="" value="">(Entity type)</option>
+            {_.get(this.props.entityTypesBySpeechAct, this.state.selectedSpeechAct, []).map((entityType, i) => (<option key={entityType} value={entityType}>{entityType}</option>))}
+          </select>
+        )
+        break
+      case stages.EXISTING_ENTITY_ID:
+        optionsDropDown = (
+          <select ref={this.entityIdSelect} onChange={this.handleEntityIdSelection}>
+            <option key="" value="">(Entity Id)</option>
+            {_.get(this.props.idsByType, this.state.selectedEntityType, []).map((id, i) => (<option key={id.id} value={id.id}>{id.id} - {_.truncate(id.text)}</option>))}
+          </select>
+        )
+    }
     return (
       <div className={'ChatInput'}>
         <div className={'InputForm'}>
@@ -200,18 +226,7 @@ class ChatInput extends Component {
           </div>
           <textarea ref={this.messageText} placeholder="Your message" rows="3" onChange={this.handleTextChange} onKeyPress={this.handleKeyPressed} style={textStyle}></textarea>
           <br/>
-          <select ref={this.speechActSelect} onChange={this.handleSpeechActSelection}>
-            <option key="" value="">(Action)</option>
-          {this.props.speechActs.map((speechAct, i) => (<option key={speechAct} value={speechAct}>{speechAct}</option>))}
-          </select>
-          <select ref={this.entityTypeSelect} onChange={this.handleEntityTypeSelection}>
-            <option key="" value="">(Entity type)</option>
-            {_.get(this.props.entityTypesBySpeechAct, this.state.selectedSpeechAct, []).map((entityType, i) => (<option key={entityType} value={entityType}>{entityType}</option>))}
-          </select>
-          <select ref={this.entityIdSelect} onChange={this.handleEntityIdSelection}>
-            <option key="" value="">(Entity Id)</option>
-            {_.get(this.props.idsByType, this.state.selectedEntityType, []).map((id, i) => (<option key={id.id} value={id.id}>{id.id} - {_.truncate(id.text)}</option>))}
-          </select>
+          {optionsDropDown}
         </div>
       </div>
     )
