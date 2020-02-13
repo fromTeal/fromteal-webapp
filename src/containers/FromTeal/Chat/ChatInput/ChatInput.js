@@ -77,6 +77,9 @@ class ChatInput extends Component {
         }
         return stages.EXISTING_ENTITY_ID
       }
+      if (tokens.length === 4) {
+        return stages.ENTITY_TEXT
+      }
     }
     return stages.DONE
   }
@@ -101,7 +104,8 @@ class ChatInput extends Component {
         if (parts) {
           // TODO fix - won't work well if using more than 1 space
           const speechAct = parts[0]
-          const rest = parts.length > 2 ? " " + parts.slice(2, parts.length).join(" ") : ""
+          const trailingSpace = speechAct !== 'list' ? " " : ""
+          const rest = parts.length > 2 ? " " + parts.slice(2, parts.length).join(" ") : trailingSpace
           this.messageText.current.value = speechAct + " " + suggestion + rest
         }
         break
@@ -186,6 +190,7 @@ class ChatInput extends Component {
     const textStyle = {...textInputColor, width: '99%'}
     const optionsSuggestionListStyle = {display: 'flex', flexFlow: 'row nowrap', justifyContent: 'center'}
     const optionSuggestionStyle = {color: 'navy', width: '200px', border: 'solid gray 0.5px', padding: '10px'}
+    const helpTextStyle = {color: 'lightGray'}
     let suggestions = this.getSuggestions(5)
     let options = suggestions.map( opt => {
       return (
@@ -193,6 +198,7 @@ class ChatInput extends Component {
       );
     })
     let optionsDropDown = null
+    let helpText = null
     switch (this.state.stage) {
       case stages.SPEECH_ACT:
         optionsDropDown = (
@@ -218,8 +224,12 @@ class ChatInput extends Component {
           </select>
         )
         break
+      case stages.ENTITY_TEXT:
+        helpText = <div style={helpTextStyle}>Enter {this.state.selectedEntityType} text </div>
+        break
       default:
         optionsDropDown = null
+        helpText = null
         break
     }
     return (
@@ -230,6 +240,7 @@ class ChatInput extends Component {
           </div>
           <textarea ref={this.messageText} placeholder="Your message" rows="3" onChange={this.handleTextChange} onKeyPress={this.handleKeyPressed} style={textStyle}></textarea>
           <br/>
+          {helpText}
           {optionsDropDown}
         </div>
       </div>
