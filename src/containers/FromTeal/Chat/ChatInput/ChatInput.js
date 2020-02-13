@@ -186,7 +186,7 @@ class ChatInput extends Component {
     const textStyle = {...textInputColor, width: '99%'}
     const optionsSuggestionListStyle = {display: 'flex', flexFlow: 'row nowrap', justifyContent: 'center'}
     const optionSuggestionStyle = {width: '200px', border: 'solid gray 0.5px', padding: '10px'}
-    let suggestions = this.getSuggestions(3)
+    let suggestions = this.getSuggestions(5)
     let options = suggestions.map( opt => {
       return (
           <div key={opt} style={optionSuggestionStyle} id={opt} onClick={this.handleSuggestionClick}>{opt}</div>              
