@@ -41,6 +41,19 @@
     height: 46px;
 }
 
+.ChatInput OptionsSuggestionList {
+    width: 80%;
+    border: solid green 0.5px;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+}
+
+.ChatInput optionSuggestion {
+    background-color: lightblue;
+    color: red;
+    width: 200px;
+}
+
 @media (min-width: 500px) and (min-height: 400px) {
     .ChatInput {
         width: 450px;
