@@ -8,6 +8,9 @@ import Spinner from '../../../components/UI/Spinner/Spinner'
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 import AuthContext from '../../auth-context'
 import {parse} from '../../../protocols/entityChat'
+import { BldgView } from '../../../components/BldgView/BldgView'
+
+import classes from './TeamChannel.css'
 
 
 const ENTITIES_METADATA_URL = "https://us-central1-manual-pilot.cloudfunctions.net/getEntitiesMetadata"
@@ -183,19 +186,27 @@ class TeamChannel extends Component {
   }
 
   render() {
-    let chat = <Chat messages={this.state.messages} progSendMessage={this.progSendMessage}/>
+    let chat = <Chat messages={this.state.messages} progSendMessage={this.progSendMessage} className={'Chat'}/>
     if (this.state.loading) chat = <Spinner />
 
     return (
       <React.Fragment>
-        {chat}
-        <ChatInput
-          teamId={this.props.match.params.id}
-          speechActs={this.state.speechActs}
-          entityTypes={this.state.entityTypes}
-          entityTypesBySpeechAct={this.state.entityTypesBySpeechAct}
-          idsByType={this.state.idsByType}
-          addMessage={this.addMessage}/>
+
+        <div className={'bldg_layer'}>
+          <BldgView/>
+        </div>
+
+        <div className={'chat_layer'}>
+          {chat}
+          <ChatInput
+            teamId={this.props.match.params.id}
+            speechActs={this.state.speechActs}
+            entityTypes={this.state.entityTypes}
+            entityTypesBySpeechAct={this.state.entityTypesBySpeechAct}
+            idsByType={this.state.idsByType}
+            addMessage={this.addMessage}/>
+        </div> 
+
       </React.Fragment>
     )
 

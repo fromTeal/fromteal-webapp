@@ -1,0 +1,72 @@
+ /* The bldg view layer on the left */
+ .bldg_layer {
+    margin: 0;
+    padding: 0;
+    width: 600px;
+    background-color: #f1f1f1;
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+  }
+  
+  /* The chat layer on the right. The value of the margin-left property should match the value of the sidebar's width property */
+  .chat_layer {
+    margin-left: 600px;
+    padding: 1px 16px;
+    height: 600px;
+  }
+
+  .Chat {
+    width: 100%;
+    margin: auto;
+    height: 450px;
+    overflow: scroll;
+    text-align: left;
+    /* background-color: #eee; */
+    /* box-shadow: inset -15px 0 lightblue; */
+  }
+  
+  
+  /* On screens that are less than 700px wide, make the sidebar into a topbar */
+  @media screen and (max-width: 700px) {
+    .bldg_layer {
+      width: 100%;
+      height: auto;
+      position: relative;
+    }
+    .chat_layer {margin-left: 0;}
+    .Chat {
+        width: 700px;
+        height: 600px;
+    }
+  }
+  
+  /* On screens that are less than 400px, display the bar vertically, instead of horizontally */
+  @media screen and (max-width: 400px) {
+    .Chat {
+        width: 450px;
+        height: 300px;
+    }
+  } 
+
+
+  /* @media (min-width: 500px) and (min-height: 400px) {
+    .Chat {
+        width: 450px;
+        height: 300px;
+    }
+}
+
+@media (min-width: 650px) and (min-height: 401px) {
+    .Chat {
+        width: 650px;
+        height: 450px;
+    }
+}
+
+@media (min-width: 1000px) and (min-height: 700px) {
+    .Chat {
+        width: 700px;
+        height: 600px;
+    }
+} */
