@@ -1,6 +1,6 @@
 grammar EntityChat
 
-message              <-  msg_suggest / msg_add_member_full / msg_add_member / msg_create_team / msg_update / msg_join / msg_invite / msg_list / msg_show
+message              <-  msg_suggest / msg_add_member_full / msg_add_member / msg_create_team / msg_update / msg_join / msg_invite / msg_list / msg_show / msg_plan / msg_start / msg_complete / msg_miss / msg_review / msg_publish
 
 msg_suggest          <-  speechAct_suggest __ entityType_suggest __ entityId __ entityText
 speechAct_suggest    <-  `suggest`
@@ -27,13 +27,37 @@ msg_invite           <-  speechAct_invite __ entityType_invite __ entityId
 speechAct_invite     <-  `invite`
 entityType_invite    <-  `member`
 
+msg_plan             <-  speechAct_plan __ entityType_plan __ entityId
+speechAct_plan       <-  `plan`
+entityType_plan      <-  `level` / `web_page`
+
+msg_start            <-  speechAct_start __ entityType_start __ entityId
+speechAct_start      <-  `start`
+entityType_start     <-  `level` / `web_page`
+
+msg_complete         <-  speechAct_complete __ entityType_complete __ entityId
+speechAct_complete   <-  `complete`
+entityType_complete  <-  `level`
+
+msg_miss             <-  speechAct_miss __ entityType_miss __ entityId
+speechAct_miss       <-  `miss`
+entityType_miss      <-  `level`
+
+msg_review           <-  speechAct_review __ entityType_review __ entityId
+speechAct_review     <-  `review`
+entityType_review    <-  `web_page`
+
+msg_publish          <-  speechAct_publish __ entityType_publish __ entityId
+speechAct_publish    <-  `publish`
+entityType_publish   <-  `web_page`
+
 msg_list             <-  speechAct_list __ entityType `s`?
 speechAct_list       <-  `list`
 
 msg_show             <-  speechAct_show __ entityType __ entityId
 speechAct_show       <-  `show`
 
-entityType           <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team`
+entityType           <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team` / `level` / `web_page`
 entityId             <-  (!" " .)+
 entityText           <-  (.)+
 __                   <-  (" " / [\n\r\t])+
