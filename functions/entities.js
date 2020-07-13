@@ -127,6 +127,68 @@ const SINGLE_ATTRIBUTE_STATES = [
   }
   
 
+  const LEVEL_STATES = [
+    "planned",
+    "started",
+    "completed",
+    "due",
+    "DELETED"
+  ]
+  
+  const LEVEL_TRANSITIONS = {
+    "plan": {
+      from: [],
+      to: "planned"
+    },
+    "start": {
+      from: ["planned"],
+      to: "started"
+    },
+    "complete": {
+      from: ["started", "planned"],
+      to: "completed"
+    },
+    "miss": {
+      from: ["started", "planned"],
+      to: "due"
+    },
+    "delete": {
+      from: LEVEL_STATES,
+      to: "DELETED"
+    }
+  }
+
+  const WEB_PAGE_STATES = [
+    "planned",
+    "started",
+    "reviewed",
+    "published",
+    "DELETED"
+  ]
+  
+  const WEB_PAGE_TRANSITIONS = {
+    "plan": {
+      from: [],
+      to: "planned"
+    },
+    "start": {
+      from: ["planned"],
+      to: "started"
+    },
+    "review": {
+      from: ["started"],
+      to: "reviewed"
+    },
+    "publish": {
+      from: ["started", "reviewed"],
+      to: "published"
+    },
+    "delete": {
+      from: LEVEL_STATES,
+      to: "DELETED"
+    }
+  }
+
   exports.ENTITIES_METADATA = {
     //
     // purpose
@@ -216,6 +278,24 @@ const SINGLE_ATTRIBUTE_STATES = [
       teamAttribute: false,
       states: TEAM_STATES,
       transitions: TEAM_TRANSITIONS
+    },
+    //
+    // level
+    //
+    level: {
+      dataType: "level",
+      teamAttribute: false,
+      states: LEVEL_STATES,
+      transitions: LEVEL_TRANSITIONS
+    },
+    //
+    // web_page
+    //
+    web_page: {
+      dataType: "web_page",
+      teamAttribute: false,
+      states: WEB_PAGE_STATES,
+      transitions: WEB_PAGE_TRANSITIONS
     }
   }
   
