@@ -696,8 +696,9 @@ const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
 
 
 const createEntityInBldg = async (entity) => {
-    const BLDG_SERVER_URL = "http://w2m.site:4000"
-    const FROMTEAL_URL = "https://fromteal.app" 
+    const BLDG_SERVER_URL = "https://api.w2m.site"
+    const DEFAULT_FROMTEAL_URL = "fromteal.app" 
+    const FROMTEAL_URL = _.get(functions.config(), "app.host", DEFAULT_FROMTEAL_URL);
     const payload = {
         "entity": {
             "web_url": FROMTEAL_URL + "/my_teams/" + entity.teamId + "/" + entity.entityType + "/" + entity.entityId,
