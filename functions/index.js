@@ -14,7 +14,7 @@ const textUtils = require('./text_utils')
 
 const axios = require('axios')
 
-const FROMTEAL_AVATAR = "http://fromTeal.app/static/media/logo.44c521dc.png"
+const FROMTEAL_AVATAR = "https://fromTeal.app/static/media/logo.44c521dc.png"
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT
 
@@ -714,7 +714,8 @@ const createEntityInBldg = async (entity) => {
     axios.post(BLDG_SERVER_URL + "/v1/bldgs/build", payload).then(response => {
         console.log("Sent new bldg to Bldg Server, who answered: ")
         console.log(response)
-        return "bldg created"
+        const notifyText = "Building updated"
+        return sendMessageBackToUser(notifyText, "notify", "bldg", null, "text-message", entity.teamId)
     }).catch(error => {
         // Error 😨
         if (error.response) {

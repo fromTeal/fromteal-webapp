@@ -1,5 +1,5 @@
 
-import React, { createRef } from "react";
+import React from "react";
 import Unity, { UnityContent } from "react-unity-webgl";
 
 export class BldgView extends React.Component {
@@ -11,7 +11,7 @@ export class BldgView extends React.Component {
     // paths are relative from your index file.
 
     this.unityContent = new UnityContent(
-      process.env.PUBLIC_URL + "/BldgClient/bldg-client-0.1.8.json",
+      process.env.PUBLIC_URL + "/BldgClient/bldg-client-0.1.9.json",
       process.env.PUBLIC_URL + "/BldgClient/UnityLoader.js"
     );
 
@@ -20,9 +20,20 @@ export class BldgView extends React.Component {
     });
   }
 
+  reload() {
+    var address = window.location.href.replace(window.location.protocol + "//", "")
+    console.log(new Date() + ": JavaScript: reload -> " + address)
+    if (this.unityContent) {
+      console.log("Actually sending reload...")
+      this.unityContent.send(
+        "BldgController", 
+        "Reload"
+      )
+    }
+  }
+
   switchAddress() {
     var address = window.location.href.replace(window.location.protocol + "//", "");
-    // TODO set web_url instead of address
     console.log("JavaScript: switchAddress -> " + address)
     this.unityContent.send(
       "BldgController", 

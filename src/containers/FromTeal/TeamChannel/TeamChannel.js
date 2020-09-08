@@ -29,6 +29,10 @@ class TeamChannel extends Component {
     loading: true
   }
 
+  constructor(props) {
+    super(props)
+    this.bldgView = React.createRef();
+  }
 
   componentDidMount() {
     const teamId = this.props.match.params.id
@@ -55,6 +59,7 @@ class TeamChannel extends Component {
                 })
               }
             })
+            this.bldgView.current.reload()
         })
     db.collection(`ids/by_team/${teamId}`).orderBy("entityType")
         .onSnapshot((querySnapshot) => {
@@ -193,7 +198,7 @@ class TeamChannel extends Component {
       <React.Fragment>
 
         <div className={'bldg_layer'}>
-          <BldgView/>
+          <BldgView ref={this.bldgView}/>
         </div>
 
         <div className={'chat_layer'}>

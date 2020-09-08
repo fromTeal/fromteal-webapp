@@ -157,7 +157,6 @@ class ChatInput extends Component {
 
   getSuggestions = (howMany) => {
     let options = []
-    console.log(`stage is ${this.state.stage}`)
     switch (this.state.stage) {
       case stages.SPEECH_ACT:
         options = this.props.speechActs
