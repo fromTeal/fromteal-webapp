@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import {parse} from '../../../../protocols/entityChat'
 import emoji from 'node-emoji'
 
-import Classes from './ChatInput.css'
+import classes from './ChatInput.css'
 
 
 const stages = {
