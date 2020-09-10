@@ -127,7 +127,7 @@ const SINGLE_ATTRIBUTE_STATES = [
   }
   
 
-  const LEVEL_STATES = [
+  const MILESTONE_STATES = [
     "planned",
     "started",
     "completed",
@@ -135,7 +135,7 @@ const SINGLE_ATTRIBUTE_STATES = [
     "DELETED"
   ]
   
-  const LEVEL_TRANSITIONS = {
+  const MILESTONE_TRANSITIONS = {
     "plan": {
       from: [],
       to: "planned"
@@ -153,7 +153,7 @@ const SINGLE_ATTRIBUTE_STATES = [
       to: "due"
     },
     "delete": {
-      from: LEVEL_STATES,
+      from: MILESTONE_STATES,
       to: "DELETED"
     }
   }
@@ -184,7 +184,7 @@ const SINGLE_ATTRIBUTE_STATES = [
       to: "published"
     },
     "delete": {
-      from: LEVEL_STATES,
+      from: MILESTONE_STATES,
       to: "DELETED"
     }
   }
@@ -280,13 +280,13 @@ const SINGLE_ATTRIBUTE_STATES = [
       transitions: TEAM_TRANSITIONS
     },
     //
-    // level
+    // milestone
     //
-    level: {
-      dataType: "level",
+    milestone: {
+      dataType: "milestone",
       teamAttribute: false,
-      states: LEVEL_STATES,
-      transitions: LEVEL_TRANSITIONS
+      states: MILESTONE_STATES,
+      transitions: MILESTONE_TRANSITIONS
     },
     //
     // web_page

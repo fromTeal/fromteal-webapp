@@ -12,8 +12,9 @@ const conversation = require('./conversation')
 const {ENTITIES_METADATA} = require('./entities')
 const textUtils = require('./text_utils')
 
+const axios = require('axios')
 
-const FROMTEAL_AVATAR = "http://fromTeal.app/static/media/logo.44c521dc.png"
+const FROMTEAL_AVATAR = "https://fromTeal.app/static/media/logo.44c521dc.png"
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT
 
@@ -342,8 +343,6 @@ const publishEvent = async (topicName, data) => {
 
 exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
     .onPublish(async (message) => {
-    // if a purpose is suggested in a personal team, we want to ask for confirmation 
-    // - only on confirmation we would start the search for matching teams
     message = message.json
     console.log(message)
     // update the ids table
@@ -353,6 +352,10 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
         entityType: message.entityType, 
         text: _.get(message, 'text', message.entityId)
     })
+    // TEMP integration with bldg server
+    await createEntityInBldg(message)
+    // if a purpose is suggested in a personal team, we want to ask for confirmation 
+    // - only on confirmation we would start the search for matching teams
     if (message.speechAct === 'suggest' && message.entityType === 'purpose') {
         console.log(`Handling purpose creation for team: ${message.teamId}`)
         const team = await fetchTeam(message.teamId)
@@ -689,6 +692,54 @@ const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
     console.log(`Frequency counts: ${JSON.stringify(frequencyCounts)}`)
     const matches = textUtils.keysSortedByValues(frequencyCounts)
     return matches.reverse()
+}
+
+
+const createEntityInBldg = async (entity) => {
+    const BLDG_SERVER_URL = "https://api.w2m.site"
+    const DEFAULT_FROMTEAL_URL = "fromteal.app" 
+    const FROMTEAL_URL = _.get(functions.config(), "app.host", DEFAULT_FROMTEAL_URL);
+    const payload = {
+        "entity": {
+            "web_url": FROMTEAL_URL + "/my_teams/" + entity.teamId + "/" + entity.entityType + "/" + entity.entityId,
+            "container_web_url": FROMTEAL_URL + "/my_teams/" + entity.teamId,
+            "entity_type": entity.entityType,
+            "state": entity.toStatus,
+            "name": entity.text || entity.entityId,
+            "summary": entity.text || entity.entityId,
+            "picture_url": "missing.png"
+        }
+    }
+    console.log(payload)
+    axios.post(BLDG_SERVER_URL + "/v1/bldgs/build", payload).then(response => {
+        console.log("Sent new bldg to Bldg Server, who answered: ")
+        console.log(response)
+        const notifyText = "Building updated"
+        return sendMessageBackToUser(notifyText, "notify", "bldg", null, "text-message", entity.teamId)
+    }).catch(error => {
+        // Error 😨
+        if (error.response) {
+            /*
+            * The request was made and the server responded with a
+            * status code that falls out of the range of 2xx
+            */
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+        } else if (error.request) {
+            /*
+            * The request was made but no response was received, `error.request`
+            * is an instance of XMLHttpRequest in the browser and an instance
+            * of http.ClientRequest in Node.js
+            */
+            console.log(error.request);
+        } else {
+            // Something happened in setting up the request and triggered an Error
+            console.log('Error', error.message);
+        }
+        console.log(error);
+        return error
+    })
 }
 
 

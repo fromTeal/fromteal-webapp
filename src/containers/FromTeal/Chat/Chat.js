@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
 
+import ChatMessage from './ChatMessage/ChatMessage'
+
 import classes from './Chat.css'
 
-import ChatMessage from './ChatMessage/ChatMessage'
 
 
 class Chat extends Component {
@@ -17,7 +18,7 @@ class Chat extends Component {
 
   render() {
     return (
-      <div ref={this.chat} className={'Chat'}>
+      <div className={'Chat'} ref={this.chat}>
         {this.props.messages.map((msg, i) => (
           <ChatMessage key={"msg_" + i} {...msg} progSendMessage={this.props.progSendMessage}/>
         ))}
