@@ -1314,11 +1314,11 @@
       var index1 = this._offset;
       var chunk0 = null;
       if (this._offset < this._inputSize) {
-        chunk0 = this._input.substring(this._offset, this._offset + 5);
+        chunk0 = this._input.substring(this._offset, this._offset + 9);
       }
-      if (chunk0 !== null && chunk0.toLowerCase() === 'level'.toLowerCase()) {
-        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 5), this._offset);
-        this._offset = this._offset + 5;
+      if (chunk0 !== null && chunk0.toLowerCase() === 'milestone'.toLowerCase()) {
+        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 9), this._offset);
+        this._offset = this._offset + 9;
       } else {
         address0 = FAILURE;
         if (this._offset > this._failure) {
@@ -1326,7 +1326,7 @@
           this._expected = [];
         }
         if (this._offset === this._failure) {
-          this._expected.push('`level`');
+          this._expected.push('`milestone`');
         }
       }
       if (address0 === FAILURE) {
@@ -1455,11 +1455,11 @@
       var index1 = this._offset;
       var chunk0 = null;
       if (this._offset < this._inputSize) {
-        chunk0 = this._input.substring(this._offset, this._offset + 5);
+        chunk0 = this._input.substring(this._offset, this._offset + 9);
       }
-      if (chunk0 !== null && chunk0.toLowerCase() === 'level'.toLowerCase()) {
-        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 5), this._offset);
-        this._offset = this._offset + 5;
+      if (chunk0 !== null && chunk0.toLowerCase() === 'milestone'.toLowerCase()) {
+        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 9), this._offset);
+        this._offset = this._offset + 9;
       } else {
         address0 = FAILURE;
         if (this._offset > this._failure) {
@@ -1467,7 +1467,7 @@
           this._expected = [];
         }
         if (this._offset === this._failure) {
-          this._expected.push('`level`');
+          this._expected.push('`milestone`');
         }
       }
       if (address0 === FAILURE) {
@@ -1595,11 +1595,11 @@
       }
       var chunk0 = null;
       if (this._offset < this._inputSize) {
-        chunk0 = this._input.substring(this._offset, this._offset + 5);
+        chunk0 = this._input.substring(this._offset, this._offset + 9);
       }
-      if (chunk0 !== null && chunk0.toLowerCase() === 'level'.toLowerCase()) {
-        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 5), this._offset);
-        this._offset = this._offset + 5;
+      if (chunk0 !== null && chunk0.toLowerCase() === 'milestone'.toLowerCase()) {
+        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 9), this._offset);
+        this._offset = this._offset + 9;
       } else {
         address0 = FAILURE;
         if (this._offset > this._failure) {
@@ -1607,7 +1607,7 @@
           this._expected = [];
         }
         if (this._offset === this._failure) {
-          this._expected.push('`level`');
+          this._expected.push('`milestone`');
         }
       }
       this._cache._entityType_complete[index0] = [address0, this._offset];
@@ -1712,11 +1712,11 @@
       }
       var chunk0 = null;
       if (this._offset < this._inputSize) {
-        chunk0 = this._input.substring(this._offset, this._offset + 5);
+        chunk0 = this._input.substring(this._offset, this._offset + 9);
       }
-      if (chunk0 !== null && chunk0.toLowerCase() === 'level'.toLowerCase()) {
-        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 5), this._offset);
-        this._offset = this._offset + 5;
+      if (chunk0 !== null && chunk0.toLowerCase() === 'milestone'.toLowerCase()) {
+        address0 = new TreeNode(this._input.substring(this._offset, this._offset + 9), this._offset);
+        this._offset = this._offset + 9;
       } else {
         address0 = FAILURE;
         if (this._offset > this._failure) {
@@ -1724,7 +1724,7 @@
           this._expected = [];
         }
         if (this._offset === this._failure) {
-          this._expected.push('`level`');
+          this._expected.push('`milestone`');
         }
       }
       this._cache._entityType_miss[index0] = [address0, this._offset];
@@ -2336,11 +2336,11 @@
                         this._offset = index1;
                         var chunk9 = null;
                         if (this._offset < this._inputSize) {
-                          chunk9 = this._input.substring(this._offset, this._offset + 5);
+                          chunk9 = this._input.substring(this._offset, this._offset + 9);
                         }
-                        if (chunk9 !== null && chunk9.toLowerCase() === 'level'.toLowerCase()) {
-                          address0 = new TreeNode(this._input.substring(this._offset, this._offset + 5), this._offset);
-                          this._offset = this._offset + 5;
+                        if (chunk9 !== null && chunk9.toLowerCase() === 'milestone'.toLowerCase()) {
+                          address0 = new TreeNode(this._input.substring(this._offset, this._offset + 9), this._offset);
+                          this._offset = this._offset + 9;
                         } else {
                           address0 = FAILURE;
                           if (this._offset > this._failure) {
@@ -2348,7 +2348,7 @@
                             this._expected = [];
                           }
                           if (this._offset === this._failure) {
-                            this._expected.push('`level`');
+                            this._expected.push('`milestone`');
                           }
                         }
                         if (address0 === FAILURE) {

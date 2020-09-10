@@ -11,7 +11,7 @@ export class BldgView extends React.Component {
     // paths are relative from your index file.
 
     this.unityContent = new UnityContent(
-      process.env.PUBLIC_URL + "/BldgClient/bldg-client-0.1.9.json",
+      process.env.PUBLIC_URL + "/BldgClient/bldg-client-0.2.0.json",
       process.env.PUBLIC_URL + "/BldgClient/UnityLoader.js"
     );
 

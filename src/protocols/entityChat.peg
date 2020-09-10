@@ -29,19 +29,19 @@ entityType_invite    <-  `member`
 
 msg_plan             <-  speechAct_plan __ entityType_plan __ entityId
 speechAct_plan       <-  `plan`
-entityType_plan      <-  `level` / `web_page`
+entityType_plan      <-  `milestone` / `web_page`
 
 msg_start            <-  speechAct_start __ entityType_start __ entityId
 speechAct_start      <-  `start`
-entityType_start     <-  `level` / `web_page`
+entityType_start     <-  `milestone` / `web_page`
 
 msg_complete         <-  speechAct_complete __ entityType_complete __ entityId
 speechAct_complete   <-  `complete`
-entityType_complete  <-  `level`
+entityType_complete  <-  `milestone`
 
 msg_miss             <-  speechAct_miss __ entityType_miss __ entityId
 speechAct_miss       <-  `miss`
-entityType_miss      <-  `level`
+entityType_miss      <-  `milestone`
 
 msg_review           <-  speechAct_review __ entityType_review __ entityId
 speechAct_review     <-  `review`
@@ -57,7 +57,7 @@ speechAct_list       <-  `list`
 msg_show             <-  speechAct_show __ entityType __ entityId
 speechAct_show       <-  `show`
 
-entityType           <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team` / `level` / `web_page`
+entityType           <-  `purpose` / `logo` / `name` / `description` / `intro` / `tag` / `tool` / `member` / `team` / `milestone` / `web_page`
 entityId             <-  (!" " .)+
 entityText           <-  (.)+
 __                   <-  (" " / [\n\r\t])+
