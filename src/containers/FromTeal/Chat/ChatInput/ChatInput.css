@@ -54,7 +54,7 @@
     width: 200px;
 }
 
-@media (min-width: 500px) and (min-height: 400px) {
+/* @media (min-width: 500px) and (min-height: 400px) {
     .ChatInput {
         width: 450px;
     }
@@ -70,4 +70,4 @@
     .ChatInput {
         width: 700px;
     }
-}
+} */
