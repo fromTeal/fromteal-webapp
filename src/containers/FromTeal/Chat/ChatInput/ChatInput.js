@@ -17,6 +17,8 @@ const stages = {
   DONE: "done"
 }
 
+const NUM_SUGGESTIONS = 4
+
 
 class ChatInput extends Component {
   speechActSelect = React.createRef()
@@ -190,7 +192,7 @@ class ChatInput extends Component {
     const optionsSuggestionListStyle = {display: 'flex', flexFlow: 'row nowrap', justifyContent: 'center'}
     const optionSuggestionStyle = {color: 'navy', width: '200px', border: 'solid gray 0.5px', padding: '10px'}
     const helpTextStyle = {color: 'lightGray'}
-    let suggestions = this.getSuggestions(5)
+    let suggestions = this.getSuggestions(NUM_SUGGESTIONS)
     let options = suggestions.map( opt => {
       return (
           <div key={opt} style={optionSuggestionStyle} id={opt} onClick={this.handleSuggestionClick}>{opt}</div>              

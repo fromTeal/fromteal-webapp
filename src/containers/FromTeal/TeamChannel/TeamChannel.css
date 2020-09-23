@@ -2,7 +2,7 @@
  .bldg_layer {
     margin: 0;
     padding: 0;
-    width: 600px;
+    width: 700px;
     background-color: #f1f1f1;
     position: fixed;
     height: 100%;
@@ -11,7 +11,7 @@
   
   /* The chat layer on the right. The value of the margin-left property should match the value of the sidebar's width property */
   .chat_layer {
-    margin-left: 600px;
+    margin-left: 700px;
     padding: 1px 16px;
     height: 600px;
   }
