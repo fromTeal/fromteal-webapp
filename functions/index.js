@@ -22,6 +22,11 @@ const TFIDF_THRESHOLD = 0
 
 const DEFAULT_PURPOSE = "Unpurposed"
 
+const BLDG_SERVER_URL = "https://api.w2m.site"
+const DEFAULT_FROMTEAL_URL = "fromteal.app" 
+const FROMTEAL_URL = _.get(functions.config(), "app.host", DEFAULT_FROMTEAL_URL);
+
+
 admin.initializeApp({
     serviceAccount: 'fromteal-sa.json',
     databaseURL: `https://${process.env.REACT_APP_FIREBASE_PROJECT_ID}.firebaseio.com`
@@ -386,6 +391,11 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
 
      const event = message.json
      console.log(`team is ${event.teamId}`)
+
+    // TEMP integration with bldg server
+     // TODO verify that it is a status change
+    await updateEntityStatusInBldg(event)
+
      if (event.toStatus === 'approved') {
          return handleApprovedEntity(event)
      }
@@ -696,9 +706,6 @@ const searchForMatchingTeams = async (purpose, exceludeTeamId) => {
 
 
 const createEntityInBldg = async (entity) => {
-    const BLDG_SERVER_URL = "https://api.w2m.site"
-    const DEFAULT_FROMTEAL_URL = "fromteal.app" 
-    const FROMTEAL_URL = _.get(functions.config(), "app.host", DEFAULT_FROMTEAL_URL);
     const payload = {
         "entity": {
             "web_url": FROMTEAL_URL + "/my_teams/" + entity.teamId + "/" + entity.entityType + "/" + entity.entityId,
@@ -717,30 +724,71 @@ const createEntityInBldg = async (entity) => {
         const notifyText = "Building updated"
         return sendMessageBackToUser(notifyText, "notify", "bldg", null, "text-message", entity.teamId)
     }).catch(error => {
-        // Error 😨
-        if (error.response) {
-            /*
-            * The request was made and the server responded with a
-            * status code that falls out of the range of 2xx
-            */
-            console.log(error.response.data);
-            console.log(error.response.status);
-            console.log(error.response.headers);
-        } else if (error.request) {
-            /*
-            * The request was made but no response was received, `error.request`
-            * is an instance of XMLHttpRequest in the browser and an instance
-            * of http.ClientRequest in Node.js
-            */
-            console.log(error.request);
-        } else {
-            // Something happened in setting up the request and triggered an Error
-            console.log('Error', error.message);
-        }
-        console.log(error);
-        return error
+        return logAxiosError(error)
     })
 }
+
+
+const updateEntityStatusInBldg = async (entity) => {
+    console.log("Updating bldg status to: " + entity.toStatus)
+    // STEP 1: resolve the bldg address of this entity
+    // https://api.w2m.site/v1/bldgs/resolve_address?web_url=fromteal.app%2fmy_teams%2ffromTeal
+    let web_url = FROMTEAL_URL + "/my_teams/" + entity.teamId + "/" + entity.entityType + "/" + entity.entityId
+    web_url = web_url.replace("/", "%2f")   // TODO escape properly
+    const resolveUrl = BLDG_SERVER_URL + "/v1/bldgs/resolve_address?web_url=" + web_url
+    axios.get(resolveUrl).then(response => {
+        console.log("Tried to resolved bldg address from Bldg Server, who answered: ")
+        console.log(response.data)
+        const bldgAddress = response.data
+
+        // STEP 2: invoke the API to update the bldg status (temporrily using REST PUT request)
+        const updateUrl = BLDG_SERVER_URL + "/v1/bldgs/" + bldgAddress
+        const payload = {
+            "bldg": {
+                "state": entity.toStatus
+            }
+        }
+        return axios.put(updateUrl, payload).then(response => {
+            console.log("Tried to update bldg status in Bldg Server, who answered: ")
+            console.log(response)
+        
+            const notifyText = "Building updated"
+            return sendMessageBackToUser(notifyText, "notify", "bldg", null, "text-message", entity.teamId)
+        }).catch(error => {
+            return logAxiosError(error)
+        })
+        
+    }).catch(error => {
+        return logAxiosError(error)
+    })
+}
+
+
+const logAxiosError = (error) => {
+    // Error 😨
+    if (error.response) {
+        /*
+        * The request was made and the server responded with a
+        * status code that falls out of the range of 2xx
+        */
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+    } else if (error.request) {
+        /*
+        * The request was made but no response was received, `error.request`
+        * is an instance of XMLHttpRequest in the browser and an instance
+        * of http.ClientRequest in Node.js
+        */
+        console.log(error.request);
+    } else {
+        // Something happened in setting up the request and triggered an Error
+        console.log('Error', error.message);
+    }
+    console.log(error);
+    return error
+}
+
 
 
 //
