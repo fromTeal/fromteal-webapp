@@ -191,6 +191,7 @@ const createTeamRecord = (intent, triggeringMessageId, teamType, purpose) => {
         purpose: purpose,
         members: [intent.user],
         tags: [],
+        milestones: [],
         teamType: teamType,
         status: intent.toStatus,
         created: new Date(),
@@ -380,7 +381,7 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
                 'notify', 'member', message.entityId, 
                 'text-message', memberTeam)
     }
-    if (message.toStatus === 'approved') {
+    if (message.toStatus === 'approved' || message.toStatus === 'planned') {
         return handleApprovedEntity(message)
     }
   });
@@ -396,7 +397,7 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
      // TODO verify that it is a status change
     await updateEntityStatusInBldg(event)
 
-     if (event.toStatus === 'approved') {
+     if (event.toStatus === 'approved' || event.toStatus === 'planned') {
          return handleApprovedEntity(event)
      }
 
@@ -404,6 +405,8 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
 
 
 const handleApprovedEntity = async (event) => {
+    // TODO this was extended to also handle planned entities, so basically
+    //      it needs to be renamed to: handleTeamAttribute
     // TODO break into functions for handling different cases (with proper error handling & resilience)
 
     const metadata = ENTITIES_METADATA[event.entityType]
@@ -452,7 +455,7 @@ const handleApprovedEntity = async (event) => {
                     attributeValue = newEntity.id
                     break
             default:
-                attributeValue = newEntity.text || newEntity.entityId
+                attributeValue = newEntity.text || newEntity.entityId || newEntity.id
         }
         console.log(`About to update team ${attributeName}: ${attributeValue}`)
         if (attributeValue !== null && attributeValue !== "") {
@@ -524,6 +527,9 @@ const updateTeamAttribute = async (teamId, attributeName, attributeValue, addToA
     const ref = db.collection('teams')
     const team = await ref.doc(teamId).get()
     const teamData = team.data()
+    if (typeof teamData[attributeName] === 'undefined') {
+        teamData[attributeName] = []
+    }
     console.log(teamData)
     if (addToArray) {
         if (!(attributeValue in teamData[attributeName])) {
