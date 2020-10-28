@@ -23,7 +23,7 @@ class Team extends Component {
   }
 
   buildLink(teamId, milestone) {
-    return '/my_teams/' + teamId + '/' + milestone
+    return '/my_teams/' + teamId + '/milestone/' + milestone
   }
 
   render() {
