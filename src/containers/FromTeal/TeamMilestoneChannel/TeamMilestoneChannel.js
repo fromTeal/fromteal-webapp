@@ -12,7 +12,7 @@ class TeamMilestoneChannel extends Component {
         const milestoneChannelId = teamId + "|" + milestone    
 
         return (
-            <TeamChannel teamId={milestoneChannelId} milestone={milestone}></TeamChannel>
+            <TeamChannel teamId={teamId} channelId={milestoneChannelId} milestone={milestone}></TeamChannel>
         )
     }
 

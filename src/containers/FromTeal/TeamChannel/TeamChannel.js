@@ -28,6 +28,7 @@ class TeamChannel extends Component {
     entityTypesBySpeechAct: {},
     loading: true,
     teamId: null,
+    channelId: null,
     isMilestone: false,
     milestone: null
   }
@@ -36,9 +37,13 @@ class TeamChannel extends Component {
     super(props)
 
     if (this.props.match !== undefined) {
+      // arriving from team route: params taken from route
       this.state.teamId = this.props.match.params.id
+      this.state.channelId = this.props.match.params.id
     } else {
+      // arriving from specialized component: params taken from props
       this.state.teamId = this.props.teamId
+      this.state.channelId = this.props.channelId
     } 
     if (this.props.milestone !== undefined) {
       this.state.isMilestone = true
@@ -48,13 +53,13 @@ class TeamChannel extends Component {
   }
 
   componentDidMount() {
-    const teamId = this.state.teamId
+    const channelId = this.state.channelId
     const db = firebase.firestore();
     // Disable deprecated features
     db.settings({
       timestampsInSnapshots: true
     });
-    db.collection(`messages/simple/${teamId}`).orderBy("created")
+    db.collection(`messages/simple/${channelId}`).orderBy("created")
         .onSnapshot((querySnapshot) => {
           this.setState({loading: false})
           querySnapshot.docChanges().forEach((change) => {
@@ -74,7 +79,7 @@ class TeamChannel extends Component {
             })
             this.bldgView.current.reload()
         })
-    db.collection(`ids/by_team/${teamId}`).orderBy("entityType")
+    db.collection(`ids/by_team/${channelId}`).orderBy("entityType")
         .onSnapshot((querySnapshot) => {
           querySnapshot.docChanges().forEach((change) => {
             // TODO handle other changes - update & delete!
@@ -151,7 +156,7 @@ class TeamChannel extends Component {
     return {text, speechAct, entityType, entityId}
   }
 
-  addMessage = (text, teamId, speechAct=null, entityType=null, entityId=null) => {
+  addMessage = (text, channelId, speechAct=null, entityType=null, entityId=null) => {
     if (_.isEmpty(speechAct) || _.isEmpty(entityType)) {
       ({text, speechAct, entityType, entityId} = this.parseMessage(text, speechAct, entityType, entityId))
     }
@@ -180,7 +185,7 @@ class TeamChannel extends Component {
       newMessage.inReplyTo = this.state.lastMessage
     }
     const db = firebase.firestore()
-    db.collection(`messages/simple/${teamId}`).add(newMessage)
+    db.collection(`messages/simple/${channelId}`).add(newMessage)
     .then(function(docRef) {
         console.log("Document written with ID: ", docRef.id);
     })
@@ -199,14 +204,18 @@ class TeamChannel extends Component {
     if (parts.length > 1) {
       entityId = parts[2]
     }
-    this.addMessage(msg, this.state.teamId, speechAct, entityType, entityId, "", this.state.teamId)
+    this.addMessage(msg, this.state.channelId, speechAct, entityType, entityId, "", this.state.channelId)
+  }
+
+  buildTeamLink = (teamId) => {
+    return "/my_teams/" + teamId
   }
 
   render() {
     let chat = <Chat messages={this.state.messages} progSendMessage={this.progSendMessage} className={'Chat'}/>
     if (this.state.loading) chat = <Spinner />
     let milestoneBreadcrums = ""
-    if (this.state.isMilestone) milestoneBreadcrums = <h1><a href="/my_teams/{this.state.teamId}">{this.state.teamId}</a> / {this.state.milestone}</h1>
+    if (this.state.isMilestone) milestoneBreadcrums = <h1><a href={this.buildTeamLink(this.state.teamId)}>{this.state.teamId}</a> / {this.state.milestone}</h1>
     return (
       <React.Fragment>
 
@@ -218,7 +227,7 @@ class TeamChannel extends Component {
           {milestoneBreadcrums}
           {chat}
           <ChatInput
-            teamId={this.state.teamId}
+            teamId={this.state.channelId}
             speechActs={this.state.speechActs}
             entityTypes={this.state.entityTypes}
             entityTypesBySpeechAct={this.state.entityTypesBySpeechAct}
