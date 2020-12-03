@@ -120,6 +120,25 @@ async function messageHandler(snap, context) {
     }
 }
 
+const isValidEntityId = (entityId, entityType) => {
+    // validate entity id - must not contain a space or a pipe, & be valid for URL
+    const invalidChars = [ ' ', '|', '/', '?', '#' ]
+
+    let idIsValid = true
+    let invalidCharUsed = null
+    invalidChars.forEach(ch => {
+        if (entityId.indexOf(ch) >= 0) {
+            idIsValid = false
+            invalidCharUsed = ch
+            return
+        }
+    })
+    if (!idIsValid) {
+        return [false, `Sorry, you can't use '${invalidCharUsed}' as a ${entityType} id`]
+    }
+    return [true, null]
+}
+
 const createEntity = async (intent, teamId, triggeringMessageId) => {
     try {
         // if no entity-id given, generate random one
@@ -131,7 +150,17 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
             console.log(`entityId provided: ${intent.entityId}`)
         }
         let snapshot
-        if (_.get(intent, "entityType", "") === "team") {
+        const entityType = _.get(intent, "entityType", "")
+        let isValid, error
+        [isValid, error] = isValidEntityId(intent.entityId, entityType)
+        if (!isValid) {
+            const text = error
+            console.log(text)
+            return sendMessageBackToUser(text, 
+                "notify", intent.entityType, 
+                intent.entityId, "text-message", teamId)
+        }
+        if (entityType === "team") {
             snapshot = await createTeam(intent, triggeringMessageId, "team", DEFAULT_PURPOSE)
         }
         else {
@@ -183,6 +212,8 @@ const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
 
 
 const createTeamRecord = (intent, triggeringMessageId, teamType, purpose) => {
+    console.log(`intent.entityId is ${intent.entityId}`)
+    // TODO validate that the team's name is unique
     console.log(`Creating new team ${intent.entityId} - ${intent.name}`)
     const ref = db.collection(`teams`)
     const d = {
@@ -556,11 +587,13 @@ const createPersonalTeam = async (user) => {
     // create a team & mark it as personal team
     const teamIntent = {
         entityId: teamName,
+        entityType: "team",
         name: teamName,
         user: user.email,
         userName: user.name,
         userPicture: user.picture,
-        toStatus: "created"
+        toStatus: "created",
+        teamId: teamName
     }
     const newTeam = await createTeam(teamIntent, null, "person", DEFAULT_PURPOSE)
     user.teamName = teamName
