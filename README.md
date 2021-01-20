@@ -1,11 +1,40 @@
-## Why
-Help people work on what they love, love their work & make a living out of it.
+## The problem
 
-## What
-FromTeal is an app that helps people who have ideas for projects *team-up* with other people who share the same passion & purpose, so they can work on these projects together & make them a reality. 
-However, we realize that teaming-up is just the first step, and in order for these teams to succeed, they need to be able to work together happily as equal partners. For example, everyone should have the power to make decisions without anyone telling others what to do, they should have the tools for resolving conflicts & they need a way to fairly distribute the value created by the project. This is why the app is also helping people *teal-up* - become a Teal organization, i.e., self-managed, purpose-driven & wholeness-cherishing (as described in the book “Reinventing Organizations”, by Fred Laloux).
-Read more:
-https://speakerdeck.com/dibau_naum_h/fromteal-product-concept-d
+The top need in Masslow’s pyramid of needs is the need to self-actualize - realize your calling & work on your real passion. We believe this is indeed a vital need that everyone should have a chance to fulfill.
 
-## Installation
-This is a regular Node.js project, built using regular npm install, but it's intended for deployment on Google Firebase. We'll post exact installation instructions later, for now feel free to contact us.
+The way people self-actualize is by creating something X that they love working on, & which they feel that the world needs, i.e., they believe other people would love X & benefit from it. The main constraint preventing people from self-actualizing is that they find themselves creating something else Y because they need to make a living & creating Y gets them the means to live. 
+Why then can’t people just stop creating Y & start working on their true calling X, & find people who love it & would pay them for it, such that they can make a living from working on what they love?  
+A good guess would be that people are afraid that it would take them time to create X in such a way that they can easily find people who love it & would pay for it, so they can make a living out of it. It is true that it almost always takes considerable time to turn the idea of creating X (the invention) into something that people love & benefit from (the innovation).
+
+There’s a common way to overcome this constraint, which is to try convince people who invest money in new entrepreneurs, allowing them to work on creating X until they can easily find people who love X & would pay them for it. That seems like a great solution, however, there’s an inherent flaw in it, which is the misalignment of goals between the people who want to self-actualize & the investors giving them money. While the entrepreneurs are driven by a calling to change something in the world - their purpose is to create X so that people would love it & benefit from it - the investors, aka venture capitalists, are driven by just the goal of maximizing money returns for themselves & the people who gave them money. When people take an investment from venture capitalists, they normally give up significant control of their venture to the investors who don’t care much about their calling or purpose, but are rather only driven by financial interests. In many cases, this leads to the entrepreneurs being kicked out of their own venture at some point, or be forced not to work on their real purpose.
+
+## Hypothesis
+
+Our hypothesis is that you don’t really need to take money from investors to start creating what you want to create & find the people who would love it & pay for it. There’s an alternative to taking investors money in order to hire people who will create X with you. We base this hypothesis on a type of event that happens all over the world, in a format called Hackathon. In these events, self-organizing teams build a product in few days, that’s ready for initial pilot & iteration with customers, all without any funding from investors. Anyone who ever been to such event would testify that there’s at least an order of magnitude difference in how much Hackathon teams are more productive, creative & effective than teams in regular organizations.
+
+How can one explain this? There could be many explanations, but we believe the strongest one is a special characteristic of Hackathon teams that no one pays attention to: they don’t have bosses or hierarchy. These self-organizing teams may have leaders, but they don’t have an hierarchy of power, where some people have the power to make decisions & some don’t. Without bosses telling team members what to do, everyone have the full freedom to exercise their creativity & be fully engaged as owners. 
+
+So basically our hypothesis is that if someone wants to self-actualize, but require time & resources to get to the point where they can make a living out of working on their calling or purpose, they can leverage the concept proved in Hackathon - create a self-organized & self-managed team, with others that share the same calling or purpose, so that they can all self-actualize together, without the need for investors.
+
+
+## The constraints
+
+If our hypothesis is correct, why aren’t hackathons enough then as an alternative to the conventional investors model? Why aren’t we seeing many companies started from hackathon events?
+
+We think there are 3 main reasons or constraints, then stand between Hackathon teams & successful businesses:
+ 
+The 1st is that although Hackathon teams work miraculously during the hackathon, outside of it they don’t maintain the flat organizational structure that leads to such extreme productivity, creativity & effectiveness. This constraint is mostly due to  
+\
+The 2nd constraint is that successful business require also knowledge, connections & guidance, which is what good investors provide beyond money, & is something normally not available for Hackathon teams. This includes knowledge & guidance leveraging the experience of other companies, connections & community to learn & collaborate with, demand for progress & accountability on milestones & help in forming an equity model.
+
+The 3rd reason is that building a great product isn’t enough, & you also need to find the people who would love it & pay for it, which isn’t something you normally get in Hackathon events.
+
+We formed fromTeal to help people self-actualize - remove the constraints preventing them from making a living from working on what they love. We do this by providing 3 services:
+• Enable & teach people how to form self-organizing, self-managed teams around a shared passion & purpose, just like in Hackathons, but not just for a limited time
+• Provide knowledge & guidance, connections & community, progress & milestones accountability & equity model, similar to what good VC’s provide
+• Creating the marketplace to help teams easily find the people who would love & pay for what they create
+
+
+To teach teams how to self-organize without bosses & a hierarchy of power, we educate them on the principles & best-practices of self-managed teams, which were proven to work in some highly successful companies, such as Patagonia, Zappos, Gore, Valve, Morning Star & many others. These principles were described in books such as “Reinventing Organizations”, “Freedom Inc”, “The Human Side of Enterprise”, which show how a self-organizing team such as those in a hackathon can actually form a highly successful business. The teams in these companies are purpose driven: they are truly driven by a calling, trying to make a change in the world. They are also self-managed teams: the companies are split to teams that don’t have any hierarchy between & within them. Each person has the power to make decisions, as long as they ask for advice from others. There’s no need to ask for permission from the management. Everyone are free to exercise their creativity & everyone truly care for the success of the company & they customers.
+
+fromTeal provides the added value similar to that provided by VC’s in the form of peer-coaching - teams provide coaching sessions to other teams, to share knowledge, provide guidance, form a community & help keep each others accountable for progress & milestones. We also facilitate an equity model, so that teams can fairly share the ownership of the venture they’re creating.
