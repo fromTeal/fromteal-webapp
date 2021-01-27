@@ -8,7 +8,7 @@ A good guess would be that people are afraid that it would take them time to cre
 
 There’s a common way to overcome this constraint, which is to try convince people who invest money in new entrepreneurs, allowing them to work on creating X until they can easily find people who love X & would pay them for it. That seems like a great solution, however, there’s an inherent flaw in it, which is the misalignment of goals between the people who want to self-actualize & the investors giving them money. While the entrepreneurs are driven by a calling to change something in the world - their purpose is to create X so that people would love it & benefit from it - the investors, aka venture capitalists, are driven by just the goal of maximizing money returns for themselves & the people who gave them money. When people take an investment from venture capitalists, they normally give up significant control of their venture to the investors who don’t care much about their calling or purpose, but are rather only driven by financial interests. In many cases, this leads to the entrepreneurs being kicked out of their own venture at some point, or be forced not to work on their real purpose.
 
-## Hypothesis
+## The hypothesis
 
 Our hypothesis is that you don’t really need to take money from investors to start creating what you want to create & find the people who would love it & pay for it. There’s an alternative to taking investors money in order to hire people who will create X with you. We base this hypothesis on a type of event that happens all over the world, in a format called Hackathon. In these events, self-organizing teams build a product in few days, that’s ready for initial pilot & iteration with customers, all without any funding from investors. Anyone who ever been to such event would testify that there’s at least an order of magnitude difference in how much Hackathon teams are more productive, creative & effective than teams in regular organizations.
 
@@ -34,7 +34,7 @@ We think there are multiple reasons or constraints, that stand between Hackathon
 5. Building a great product isn’t enough, & you also need to find the people who would love it & pay for it, which isn’t something you normally get in Hackathon events.
 
 
-## fromTeal
+## The project
 
 We formed fromTeal to help people reach self-actualization - remove the constraints preventing them from making a living from working on what they love. We do this by building an eco-system that removes these constraints by:
 * Enabling & teaching people how to form self-organizing, self-managed teams around a shared passion & purpose, just like in Hackathons, but not just for a limited time
