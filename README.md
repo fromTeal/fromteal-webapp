@@ -16,6 +16,8 @@ How can one explain this? There could be many explanations, but we believe the s
 
 So basically our hypothesis is that if someone wants to self-actualize, but require time & resources to get to the point where they can make a living out of working on their calling or purpose, they can leverage the concept proved in Hackathon - create a self-organized & self-managed team, with others that share the same calling or purpose, so that they can all self-actualize together, without the need for investors.
 
+With the advent of digital technology, there are now free, accessible & effective services for anyone to search & acquire knowledge, hear what anyone in the world says & communicate with them, make transactions with anyone around the world. It's about time there would be also a free, accessible & effective service for people to start or discover self-organizing team working on the thing they want to change in the world, their passion or purpose, so they can reach self-actualization.  
+
 
 ## The constraints
 
