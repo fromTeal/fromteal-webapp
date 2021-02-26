@@ -46,6 +46,8 @@ We formed fromTeal to help people reach self-actualization - remove the constrai
 * Creating the marketplace to help teams easily find the people who would love & pay for what they create
 
 
+![fromTeal screenshot](26B002D0-E65C-4F05-B772-60249D3CCE91.png)
+
 To teach teams how to self-organize without bosses & a hierarchy of power, we educate them on the principles & best-practices of self-managed teams, which were proven to work in some highly successful companies, such as Patagonia, Zappos, Gore, Valve, Morning Star & many others. These principles were described in books such as “Reinventing Organizations”, “Freedom Inc”, “The Human Side of Enterprise”, which show how a self-organizing team such as those in a hackathon can actually form a highly successful business. The teams in these companies are purpose driven: they are truly driven by a calling, trying to make a change in the world. They are also self-managed teams: the companies are split to teams that don’t have any hierarchy between & within them. Each person has the power to make decisions, as long as they ask for advice from others. There’s no need to ask for permission from the management. Everyone are free to exercise their creativity & everyone truly care for the success of the company & they customers.
 
 fromTeal provides the added value similar to that provided by VC’s in the form of peer-coaching - teams provide coaching sessions to other teams, to share knowledge, provide guidance, form a community & help keep each others accountable for progress & milestones. 
