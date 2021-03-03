@@ -22,15 +22,21 @@ class Team extends Component {
     }, [arr[0]]);
   }
 
-  buildLink(teamId, milestone) {
-    return '/my_teams/' + teamId + '/milestone/' + milestone
-  }
+  // buildLink(teamId, milestone) {
+  //   return '/my_teams/' + teamId + '/milestone/' + milestone
+  // }
 
   render() {
-    let milestones = this.props.milestones.map(milestone => (
-      <a href={this.buildLink(this.props.teamId, milestone)}>{milestone}</a>
-    ))
-    milestones = this.intersperse(milestones, ", ")
+    // TODO cleanup code for showing links to container bldg for milestones
+    // let milestones = this.props.milestones.map(milestone => (
+    //   <a href={this.buildLink(this.props.teamId, milestone)}>{milestone}</a>
+    // ))
+    //let milestones = this.intersperse(this.props.milestones, ", ")
+
+    let milestones = ""
+    if (this.props.milestones.length) {
+      milestones = `Milestones: ${this.props.milestones}`
+    }
 
     return (
       <article className="Team" onClick={this.props.clicked}>
@@ -38,7 +44,7 @@ class Team extends Component {
         <div className="Info">
           <div className="Purpose">{this.props.purpose}</div>
           <div className="members">{this.props.members.length} members</div>
-          <div className="Milestones">Milestones: {milestones}
+          <div className="Milestones">{milestones}
           </div>
           <div className="Tags">{this.props.tags.join(", ")}</div>
         </div>
