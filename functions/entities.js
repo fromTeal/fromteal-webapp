@@ -284,7 +284,7 @@ const SINGLE_ATTRIBUTE_STATES = [
     //
     milestone: {
       dataType: "milestone",
-      teamAttribute: false,
+      teamAttribute: true,
       states: MILESTONE_STATES,
       transitions: MILESTONE_TRANSITIONS
     },

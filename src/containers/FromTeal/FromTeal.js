@@ -5,6 +5,7 @@ import { Route, NavLink, Switch, Redirect } from 'react-router-dom';
 import './FromTeal.css';
 import Teams from './Teams/Teams';
 import TeamChannel from './TeamChannel/TeamChannel';
+import TeamMilestoneChannel from './TeamMilestoneChannel/TeamMilestoneChannel';
 import FirebaseAuth from '../Auth/FirebaseAuth'
 import FirebaseLogout from '../Auth/FirebaseLogout'
 import asyncComponent from '../../hoc/asyncComponent';
@@ -62,6 +63,7 @@ class FromTeal extends Component {
         content = (
           <Switch>
               {this.state.isAuth ? <Route path="/new-team" component={AsyncNewTeam} /> : null}
+              <Route path="/my_teams/:id/milestone/:milestone" exact component={TeamMilestoneChannel} />
               <Route path="/my_teams/:id" exact component={TeamChannel} />
               <Route path="/my_teams" exact component={Teams} />
               <Route path="/auth" exact component={FirebaseAuth} />

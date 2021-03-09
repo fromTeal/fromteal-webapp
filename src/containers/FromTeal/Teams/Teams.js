@@ -61,10 +61,12 @@ class Teams extends Component {
                     // <Link to={'/teams/' + team.id} key={team.id}>
                     <Team
                         key={team.id}
+                        teamId={team.id}
                         name={team.name}
                         purpose={team.purpose}
                         tags={team.tags}
                         members={team.members}
+                        milestones={team.milestones || []}
                         clicked={() => this.teamSelectedHandler( team.id )} />
                     // </Link>
                 );

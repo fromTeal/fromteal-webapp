@@ -120,6 +120,25 @@ async function messageHandler(snap, context) {
     }
 }
 
+const isValidEntityId = (entityId, entityType) => {
+    // validate entity id - must not contain a space or a pipe, & be valid for URL
+    const invalidChars = [ ' ', '|', '/', '?', '#' ]
+
+    let idIsValid = true
+    let invalidCharUsed = null
+    invalidChars.forEach(ch => {
+        if (entityId.indexOf(ch) >= 0) {
+            idIsValid = false
+            invalidCharUsed = ch
+            return
+        }
+    })
+    if (!idIsValid) {
+        return [false, `Sorry, you can't use '${invalidCharUsed}' as a ${entityType} id`]
+    }
+    return [true, null]
+}
+
 const createEntity = async (intent, teamId, triggeringMessageId) => {
     try {
         // if no entity-id given, generate random one
@@ -131,7 +150,17 @@ const createEntity = async (intent, teamId, triggeringMessageId) => {
             console.log(`entityId provided: ${intent.entityId}`)
         }
         let snapshot
-        if (_.get(intent, "entityType", "") === "team") {
+        const entityType = _.get(intent, "entityType", "")
+        let isValid, error
+        [isValid, error] = isValidEntityId(intent.entityId, entityType)
+        if (!isValid) {
+            const text = error
+            console.log(text)
+            return sendMessageBackToUser(text, 
+                "notify", intent.entityType, 
+                intent.entityId, "text-message", teamId)
+        }
+        if (entityType === "team") {
             snapshot = await createTeam(intent, triggeringMessageId, "team", DEFAULT_PURPOSE)
         }
         else {
@@ -183,6 +212,8 @@ const createTeam = async (intent, triggeringMessageId, teamType, purpose) => {
 
 
 const createTeamRecord = (intent, triggeringMessageId, teamType, purpose) => {
+    console.log(`intent.entityId is ${intent.entityId}`)
+    // TODO validate that the team's name is unique
     console.log(`Creating new team ${intent.entityId} - ${intent.name}`)
     const ref = db.collection(`teams`)
     const d = {
@@ -191,6 +222,7 @@ const createTeamRecord = (intent, triggeringMessageId, teamType, purpose) => {
         purpose: purpose,
         members: [intent.user],
         tags: [],
+        milestones: [],
         teamType: teamType,
         status: intent.toStatus,
         created: new Date(),
@@ -380,7 +412,7 @@ exports.handleEntityCreatedEvent = functions.pubsub.topic('entity_created')
                 'notify', 'member', message.entityId, 
                 'text-message', memberTeam)
     }
-    if (message.toStatus === 'approved') {
+    if (message.toStatus === 'approved' || message.toStatus === 'planned') {
         return handleApprovedEntity(message)
     }
   });
@@ -396,7 +428,7 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
      // TODO verify that it is a status change
     await updateEntityStatusInBldg(event)
 
-     if (event.toStatus === 'approved') {
+     if (event.toStatus === 'approved' || event.toStatus === 'planned') {
          return handleApprovedEntity(event)
      }
 
@@ -404,6 +436,8 @@ exports.handleEntityUpdatedEvent = functions.pubsub.topic('entity_updated')
 
 
 const handleApprovedEntity = async (event) => {
+    // TODO this was extended to also handle planned entities, so basically
+    //      it needs to be renamed to: handleTeamAttribute
     // TODO break into functions for handling different cases (with proper error handling & resilience)
 
     const metadata = ENTITIES_METADATA[event.entityType]
@@ -452,7 +486,7 @@ const handleApprovedEntity = async (event) => {
                     attributeValue = newEntity.id
                     break
             default:
-                attributeValue = newEntity.text || newEntity.entityId
+                attributeValue = newEntity.text || newEntity.entityId || newEntity.id
         }
         console.log(`About to update team ${attributeName}: ${attributeValue}`)
         if (attributeValue !== null && attributeValue !== "") {
@@ -524,6 +558,9 @@ const updateTeamAttribute = async (teamId, attributeName, attributeValue, addToA
     const ref = db.collection('teams')
     const team = await ref.doc(teamId).get()
     const teamData = team.data()
+    if (typeof teamData[attributeName] === 'undefined') {
+        teamData[attributeName] = []
+    }
     console.log(teamData)
     if (addToArray) {
         if (!(attributeValue in teamData[attributeName])) {
@@ -550,11 +587,13 @@ const createPersonalTeam = async (user) => {
     // create a team & mark it as personal team
     const teamIntent = {
         entityId: teamName,
+        entityType: "team",
         name: teamName,
         user: user.email,
         userName: user.name,
         userPicture: user.picture,
-        toStatus: "created"
+        toStatus: "created",
+        teamId: teamName
     }
     const newTeam = await createTeam(teamIntent, null, "person", DEFAULT_PURPOSE)
     user.teamName = teamName
